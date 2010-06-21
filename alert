@@ -4,6 +4,6 @@
 # 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
-# FIXME
-osascript -e 'tell app "Finder" to display alert "TODO"'
+# # FIXME
+# osascript -e 'tell app "Finder" to display alert "TODO"'
 
