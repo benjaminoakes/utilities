@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# Checks a volume's free space.  Meant for a cron job.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+VOLUME_NAME = 'Time Machine'
+VOLUME_PATH = "/Volumes/#{VOLUME_NAME}"
+
+free_space_table = %x(df)
+free_space_table.each do |line|
+  match_data = line.match(/(\d+)%\s+#{VOLUME_PATH}$/)
+  unless match_data.nil?
+    percentage = match_data[1].to_i
+    if percentage >= 98
+      STDERR.puts "#{VOLUME_PATH} is getting full (#{percentage}%)"
+    end
+  end
+end
+

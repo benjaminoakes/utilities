@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+# Run a file through ERB and spit out the result.
+# 
+# Usage:
+# 
+#     erbify path/to/file.erb
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+require 'erb'
+
+template = ARGF.readlines
+template_shell = ERB.new(template, 0, '%<>')
+puts template_shell.result
+

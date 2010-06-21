@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Rather than copying and pasting what GitHub throws at you (and crossing your fingers), do this.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+GITHUB_USERNAME='benjaminoakes'
+
+NAME=$1 
+echo Creating github repository $NAME
+
+mkdir $NAME
+cd $NAME
+git init
+touch README
+git add README
+git commit -m 'first commit'
+git remote add origin "git@github.com:$GITHUB_USERNAME/$NAME.git"
+git push origin master
+

@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+# Textile to HTML converter.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'rubygems'
+require 'redcloth'
+
+lines = ARGF.readlines
+puts RedCloth.new(lines.join).to_html
+

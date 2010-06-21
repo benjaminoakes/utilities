@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+# Checks the web interface for a Dell MFP Laser 3115cn and notifies when the scanner is jammed.
+# 
+# Yeah, I totally nerded out on this one, but it that thing jammed all the time.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'rubygems'
+require 'hpricot'
+require 'open-uri'
+
+# NOTE You'll need to fill these in:
+
+IP_ADDRESS = 'xxx.xxx.xxx.xxx'
+NOTIFICATION_EMAIL = 'you@yourcompany.com' # One possibility:  the "email address" that corresponds to a text message on your phone  (vtext.com for Verizon, not sure for others).
+
+def convert_entities(string)
+  string.gsub!(/&(.*?);/) do |match|
+    case match.to_s
+    when /gt/
+      '>'
+    when /nbsp/
+      ' '
+    else
+      match.to_s
+    end
+  end
+  
+  return string
+end
+
+html = open("http://#{IP_ADDRESS}/ews/frametop.htm")
+document = Hpricot.parse(html)
+
+console = ''
+
+document.search('tt') do |tt|
+  console << convert_entities(tt.inner_html)
+end
+
+# puts console
+
+if console.match(/jam/i)
+  $stderr.puts("Paper jam!")
+end
+

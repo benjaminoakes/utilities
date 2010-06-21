@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Goal: something like the "alert" command in BeOS.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+# FIXME
+osascript -e 'tell app "Finder" to display alert "TODO"'
+

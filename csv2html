@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+# Turn one or more CSV files into HTML tables.
+# 
+# Quick and dirty.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'csv'
+
+puts '<html>'
+puts '<body>'
+
+is_first_line = true
+
+puts '<table>'
+
+CSV::Reader.parse(ARGF.readlines.join) do |row|
+  puts '<tr>'
+  if is_first_line
+    row.each do |value|
+      puts "<th>#{value}</th>"
+    end
+  else
+    escaped_values = row.map { |value| value.nil? ? 'NULL' : "'" + value.gsub("'", "\\'") + "'" }
+
+    escaped_values.each do |escaped_value|
+      puts "<td>#{escaped_value}</td>"
+    end
+  end
+
+  puts '</tr>'
+
+  is_first_line = false
+end
+
+puts '</table>'
+puts
+ 
+puts '</body>'
+puts '</html>'
+
