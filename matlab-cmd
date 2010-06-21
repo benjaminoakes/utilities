@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Easily invoke the command-line version of Matlab.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+matlab -nosplash -nodesktop $*
+

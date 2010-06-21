@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# Markdown to HTML converter.  (I'm pretty sure there's something like this included in BlueCloth now, though...)
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'rubygems'
+require 'bluecloth' # Needed to be installed on OS X 10.5
+
+input = ''
+
+ARGF.each_line do |line|
+  input << line
+end
+
+puts BlueCloth.new(input).to_html
+

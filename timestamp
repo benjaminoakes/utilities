@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# Print out the current date and time.  Nice for making backups.
+# 
+# Example:
+# 
+#     cp filename.txt filename.$(timestamp).txt
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+date +date_%Y-%m-%d_time_%H-%M-%S
+

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+mkdir -p "$HOME/log"
+uptime >> "$HOME/log/uptime.log"
+

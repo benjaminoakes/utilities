@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# What `man` is to C and `ri` is to Ruby, `matlabdoc` is to Matlab
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+if [ "$1" = "" -o "$2" != "" ]; then
+  echo "Usage: $(basename $0) term"
+  exit -1
+fi
+
+# CLI
+echo "disp('--- Begin STDOUT ---'); help $1; disp('--- End STDOUT ---');" \
+  | $HOME/bin/matlab/bin/matlab -nosplash -nodesktop \
+  | ruby -e "
+      within = false
+  
+      ARGF.each_line do |line|
+        if line.match(/--- Begin STDOUT ---/)
+          within = true
+        elsif line.match(/--- End STDOUT ---/)
+          within = false
+        else
+          puts line if within
+        end
+      end
+    "
+
+# # TODO GUI
+# echo "doc $1" \
+#   | matlab -nosplash -nodesktop
+

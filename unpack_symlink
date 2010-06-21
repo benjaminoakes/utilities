@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# WARNING: it works if you type it but not through this script... ARG!
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+
+# TARGET="$1"
+# 
+# cp -R "$TARGET/" "$TARGET-tmp/"
+# mv "$TARGET/" ~/.Trash/
+# mv "$TARGET-tmp/" "$TARGET/"
+
