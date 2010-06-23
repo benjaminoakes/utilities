@@ -10,6 +10,9 @@ if ARGV.length != 1
 end
 
 pattern = case ARGV[0]
+# FIXME
+# when '--blank'
+#   /^$/
 when '--erb'
   /<%.*?%>/m
 when '--sh-comment' # For Ruby, Perl, Bash, etc.
