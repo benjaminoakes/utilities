@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# In the spirit of BeOS...
+# 
+# Usage:
+# 
+#     while is_computer_on; do
+#         # Do something over and over and over and over and...
+#     done
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+true
+
