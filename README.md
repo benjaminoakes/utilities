@@ -1,7 +1,7 @@
 Utilities
 =========
 
-Small command line programs I like to have at my fingertips.
+Small command line programs I like to have at my fingertips.  Many are useful as filters in vim, for example.
 
 Platform specific files are located in directories (such as "osx").
 

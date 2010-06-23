@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+# Truncate a string given via STDIN.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+class String
+  def truncate(cutoff = 30, replacement_string = '...')
+    if self.length <= cutoff
+      return self
+    else
+      return self[0, [0, cutoff - replacement_string.length].max] + replacement_string
+    end
+  end
+end
+
+if ARGV.length != 1
+  puts "Usage: #{$PROGRAM_NAME} length"
+  exit
+end
+
+length = ARGV[0].to_i
+text = STDIN.readlines.join
+
+puts text.truncate(length)
+
