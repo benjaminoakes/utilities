@@ -4,7 +4,7 @@
 # 
 # Usage:
 # 
-#     while is_computer_on; do
+#     while is-computer-on; do
 #         # Do something over and over and over and over and...
 #     done
 # 
