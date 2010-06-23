@@ -3,7 +3,7 @@
 # Reverse the lines of a plain text file.
 # 
 # Reads from a given filename, or if that's not present, standard-in
-#
+# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
 if 0 == ARGV.length
