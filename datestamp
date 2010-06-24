@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 
-# Print out the current date.  Nice for making backups.
-# 
-# Example:
-# 
-#     cp filename.txt filename.$(datestamp).txt
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+if [ "$1" == "--help" ]; then
+  cat <<EOF
+Usage: $0 [--help]
+
+Print out the current date.  Nice for making backups.
+
+  --help      Show this help text.
+
+Example:
+
+    cp filename.txt filename.\$(datestamp).txt
+EOF
+  exit -1
+fi
 
 date +date_%Y-%m-%d
 
