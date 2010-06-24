@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 # If you're doing this often from the command line, you can also add these to your ~/.sqliterc:
 # 
 #     .headers on
@@ -13,6 +14,19 @@ require 'stringio'
 
 require 'rubygems'
 require 'sqlite3'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] database_path [table_name_1 ... table_name_n] [< query.sql]"
+
+Turns a SQLite3 database into a CSV file based on table names or a query.
+
+  --help            Show this help text.
+  database_path     Input SQLite3 database.
+  table_names       Tables in the database.  Each will be output as a CSV file.
+EOF
+  exit(-1)
+end
 
 # Hacked together (and very simplistic) database interface.
 class Database
@@ -57,9 +71,8 @@ end
 database_path = ARGV[0]
 table_names = ARGV[1, ARGV.length]
 
-if database_path.nil?
-  puts "Usage: sqlite2csv database_path [table_name_1 ... table_name_n] [< query.sql]"
-  exit
+if ARGV.any? { |a| '--help' == a } ||  database_path.nil?
+  show_usage
 end
 
 database = Database.new(database_path)
