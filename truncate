@@ -19,6 +19,7 @@ Usage: #{$PROGRAM_NAME} [ --help | length ]"
 Truncate a string given via STDIN.
 
   --help      Show this help text.
+  length      Length of truncated text.
 EOF
   exit(-1)
 end
