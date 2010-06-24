@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+# Run the specified command and notify the user via growl on completion.
+# 
+# Example:
+# 
+#     notify svn up
+# 
+# This is based on an idea found elsewhere, but I couldn't find it very immediately.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+$*
+
+if [ $? -eq 0 ]
+then
+	growlnotify -m "\"$*\" completed (SUCCESS)"
+else
+	growlnotify -m "\"$*\" completed (FAILED)"
+fi
+
