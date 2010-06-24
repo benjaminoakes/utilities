@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+if [ "$1" == "--help" ]; then
+  cat <<EOF
+Usage: $0 [--help]
+
+Make changes to the system to reverse lowpower.  Must be run as root.
+
+  --help      Show this help text.
+EOF
+  exit -1
+fi
+
+ifconfig en1 up
+blueutil on
+display-brightness 1
+

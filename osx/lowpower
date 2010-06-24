@@ -5,7 +5,7 @@ if [ "$1" == "--help" ]; then
   cat <<EOF
 Usage: $0 [--help]
 
-Make changes to the system to reduce power usage (i.e. reduce screen brightness, disable AirPort, etc.)
+Make changes to the system to reduce power usage (i.e. reduce screen brightness, disable AirPort, etc.).  Must be run as root.
 
   --help      Show this help text.
 EOF
