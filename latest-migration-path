@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+# I have to do this *all* the time when dealing with Rails migrations.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'find'
+
+MIGRATION_PATH = 'db/migrate/'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: latest-migration-path [--help]
+
+Get the path of the most recent migration.  Assumes you're in the root of a Rails project.
+
+  --help      Show this help text.
+
+Example:
+    
+    vim `latest-migration-path`
+
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+
+if !File.exists?(MIGRATION_PATH)
+  STDERR.puts "#{$PROGRAM_NAME}:  Couldn't find #{MIGRATION_PATH}.  (Are you sure you're in the root of a Rails project?)"
+  exit(-1)
+else
+  filenames = []
+  
+  Find.find(MIGRATION_PATH) do |filename|
+    filenames << filename
+  end
+  
+  filenames.sort!
+  latest_migration_path = filenames.last
+  puts latest_migration_path
+end
+
