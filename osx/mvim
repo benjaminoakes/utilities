@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Negative reinforcement.  (My fingers go crazy if I have to type differnt commands on different computers.)
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+echo Please use 'gvim' instead
+
