@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'fileutils'
+require 'time'
+
+class Time
+  # Useful for making backups
+  def timestamp
+    return self.strftime('date_%Y-%m-%d_time_%H-%M-%S')
+  end
+end
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] [ --dry-run | --noop ] file1 file2 ... fileN
+
+Standardize timestamps on filenames.  If there is no timestamp, it defaults to the current time.
+
+  --help                Show this help text.
+  --dry-run, --noop     Don't make any changes; just show what would happen.
+  files                 Files to be renamed
+
+Example:
+
+    #{$PROGRAM_NAME} --dry-run *.sqlite3
+    Dry run:
+    
+    mv database_2010.04.01.16.55.08.sqlite3 database_date_2010-04-01_time_16-55-08.sqlite3 
+    mv database_20100301165508.sqlite3 database_date_2010-03-01_time_16-55-08.sqlite3 
+    ...
+EOF
+  exit(-1)
+end
+
+options = {:verbose => true}
+
+if ARGV.delete('--noop') || ARGV.delete('--dry-run')
+  options[:noop] = true
+end
+
+if ARGV.empty? || ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+if options[:noop]
+  puts 'Dry run:'
+  puts
+end
+
+ARGV.each do |non_standard_filename|
+  cleaned = non_standard_filename.gsub(/[^0-9]/i, '')
+  time = Time.parse(cleaned)
+  
+  prefix = non_standard_filename.gsub(/#{time.year}.*$/, '') # Assumed to be everything up until the year
+  extension = File.extname(non_standard_filename)
+  prefix.gsub!(/#{extension}$/, '') # For the "no timestamp" case
+
+  standard_filename = "#{prefix}#{time.timestamp}#{extension}"
+
+  FileUtils.mv(
+    non_standard_filename,
+    standard_filename,
+    options
+  )
+end
+
