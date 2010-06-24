@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] string
+
+Say numbers out loud (e.g., a telephone number) so that you can check what you wrote.
+
+  --help      Show this help text.
+  string      Numbers to be said
+EOF
+  exit(-1)
+end
+
+if ARGV.empty? || ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+ARGV.each do |arg|
+  # Put spaces in so that `say` doesn't read it as "five thousand, three hundred..."
+  separated = arg.gsub(/(.)/, '\1 ')
+  %x(say #{separated})
+end
+
