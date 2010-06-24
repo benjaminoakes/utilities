@@ -1,16 +1,21 @@
 #!/usr/bin/env ruby
 
-# Get the distribution of words in a text file (i.e., how many times you used them).
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
 def show_usage
-  puts "Usage: #{$PROGRAM_NAME} filename"
+  puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] filename
+
+Get the distribution of words in a text file (i.e., how many times you used them).
+
+  --help      Show this help text.
+  filename    Input file.
+EOF
+  exit(-1)
 end
 
-unless 1 == ARGV.length
+if 1 != ARGV.length || ARGV.any? { |a| '--help' == a }
   show_usage
-  exit
 end
 
 filename = ARGV[0]
