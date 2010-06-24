@@ -9,8 +9,9 @@ Delete occurrences of the given pattern from STDIN.  Useful for canned regexes (
 
   --help            Show this help text.
   --erb             Canned:  ERB (embedded Ruby) blocks.
+  --non-ascii       Canned:  Non-ASCII characters.
   --sh-comment      Canned:  Shell script comments (Ruby, Perl, Bash, etc.).
-  pattern           Create your own regex using PCRE.
+  pattern           Create your own regex using PCRE (via Ruby's Regexp).
 EOF
   exit(-1)
 end
@@ -27,10 +28,30 @@ when '--erb'
   /<%.*?%>/m
 when '--sh-comment' # For Ruby, Perl, Bash, etc.
   /#.*$/
+when '--non-ascii'
+  /[^\x20-\x7E]/ # not [:print:]
 else
   Regexp.new(ARGV[0])
 end
 
 text = STDIN.readlines.join
 puts text.gsub(pattern, '')
+
+# # TODO Idea: replace non-ASCII with similar characters in ASCII
+# if :non_ascii == pattern
+#   # FIXME this probably relies on things that won't work in Ruby 1.9
+#   puts text.gsub(//) do |char|
+#     ascii_code = char[0]
+# 
+#     if ascii_code >= 20 && ascii_code <= 126
+#     	char
+#     elsif 173 == ascii_code # a type of dash ('-')
+#       '-' # Probably used in a bulleted list
+#     else
+#       ''
+#     end
+#   end
+# else
+#   puts text.gsub(pattern, '')
+# end
 
