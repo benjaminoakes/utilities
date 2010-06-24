@@ -23,7 +23,7 @@ Standardize timestamps on filenames.  If there is no timestamp, it defaults to t
 
 Example:
 
-    #{$PROGRAM_NAME} --dry-run *.sqlite3
+    $ #{$PROGRAM_NAME} --dry-run *.sqlite3
     Dry run:
     
     mv database_2010.04.01.16.55.08.sqlite3 database_date_2010-04-01_time_16-55-08.sqlite3 
