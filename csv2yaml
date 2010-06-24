@@ -1,0 +1,100 @@
+#!/usr/bin/env ruby
+
+#--
+# TODO This needs some work, but I don't have time to do that right now.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'yaml'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] [--ignore-overwrite] filename
+
+Takes a CSV file (tab-delimmeted only for now) and outputs YAML.  Useful for making fixtures.
+
+  --help                      Show this help text.
+  --ignore-overwrite, -i      Don't warn when overwriting fixtures.
+  filename                    Output filename.
+EOF
+  exit(-1)
+end
+
+if ARGV.empty? || ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+if "-i" == ARGV[0] or "--ignore-overwrite" == ARGV[0]
+  ARGV.shift
+  ignoring_overwrite = true
+else
+  ignoring_overwrite = false
+end
+
+File.open(ARGV[0]) do |file|
+  header = file.gets.chomp!
+  
+  if header.match(/^#/)
+    attributes = header.split(/\t/)
+    attributes.first.gsub!(/^#/, '')
+  else
+    puts "There needs to be a header on the first line (starting with '#') which describes the columns"
+    exit
+  end
+  
+  fixture_pattern = file.gets.chomp!
+  
+  if fixture_pattern.match(/^#/)
+    fixture_attributes = fixture_pattern.split(/\t/)
+    fixture_attributes.first.gsub!(/^#/, '')
+  else
+    puts "There needs to be a fixture pattern on the second line (starting with '#') which describes the columns you want to be used in a fixture name (based on the header)"
+    exit
+  end
+  
+  line_count = 0
+  data = {}
+  
+  if ignoring_overwrite
+    counts = {}
+  end
+  
+  while line = file.gets.chomp!
+    line_count += 1
+    record = {}
+    
+    values = line.split(/\t/)
+    attributes.each_with_index do |attribute, index|
+      record[attribute] = values[index]
+    end
+    
+    fixture_name = fixture_attributes.collect { |fixture_attribute| record[fixture_attribute].strip.gsub(/\s+/, '_').downcase }.join('_')
+    
+    unless data.keys.include?(fixture_name)
+      data[fixture_name] = record
+    else
+      if ignoring_overwrite
+        if counts[fixture_name]
+          counts[fixture_name] += 1
+        else
+          counts[fixture_name] = 1
+        end
+        
+        data["#{fixture_name}_#{counts[fixture_name]}"] = record
+      else
+        puts "Overwriting a record! (fixture_name: #{fixture_name})"
+        exit
+      end
+    end
+  end
+  
+  unless line_count == data.length
+    puts "We lost some records someplace..."
+    puts("line_count: #{line_count.inspect}")
+    puts("data.length: #{data.length.inspect}")
+    exit
+  end
+  
+  puts data.to_yaml
+end
+
