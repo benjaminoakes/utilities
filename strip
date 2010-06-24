@@ -37,10 +37,10 @@ end
 text = STDIN.readlines.join
 puts text.gsub(pattern, '')
 
-# # TODO Idea: replace non-ASCII with similar characters in ASCII
+# # TODO Idea: replace non-ASCII with similar characters in ASCII.  That probably deserves a command in itself if one doesn't exist already.
 # if :non_ascii == pattern
 #   # FIXME this probably relies on things that won't work in Ruby 1.9
-#   puts text.gsub(//) do |char|
+#   puts text.gsub(/./) do |char|
 #     ascii_code = char[0]
 # 
 #     if ascii_code >= 20 && ascii_code <= 126
