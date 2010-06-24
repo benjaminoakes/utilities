@@ -1,0 +1,28 @@
+#!/bin/sh
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+if [ "$1" == "--help" ]; then
+  cat <<EOF
+Usage: $0 [--help]
+
+Make changes to the system to reduce power usage (i.e. reduce screen brightness, disable AirPort, etc.)
+
+  --help      Show this help text.
+EOF
+  exit -1
+fi
+
+# Turn off AirPort.  Typically it's en1, but this isn't guaranteed.
+# See also: http://www.macosxhints.com/article.php?story=20031206194417678
+# Must be run as root
+ifconfig en1 down
+
+# Turn off Bluetooth.
+# Requires `blueutil`, found at http://www.frederikseiffert.de/blueutil/
+blueutil off
+
+# Dim screen
+# From code found at http://osxbook.com/book/bonus/chapter10/light/
+# Sometimes resets given ambient light
+display-brightness 0.01
+
