@@ -3,10 +3,11 @@
 # 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
-
 # TARGET="$1"
 # 
 # cp -R "$TARGET/" "$TARGET-tmp/"
 # mv "$TARGET/" ~/.Trash/
 # mv "$TARGET-tmp/" "$TARGET/"
+
+echo "Non-functional.  Nothing to see here."
 
