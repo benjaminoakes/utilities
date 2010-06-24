@@ -1,14 +1,24 @@
 #!/usr/bin/env bash
 
-# In the spirit of BeOS...
-# 
-# Usage:
-# 
-#     while is-computer-on; do
-#         # Do something over and over and over and over and...
-#     done
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
+if [ "$1" == "--help" ]; then
+  cat <<EOF
+Usage: $0 [--help]
+
+In the spirit of BeOS...
+
+  --help      Show this help text.
+
+Example:
+
+    while is-computer-on; do
+        # Do something over and over and over and over and...
+    done
+EOF
+  exit -1
+fi
+
+# All that just to do this:
 true
 
