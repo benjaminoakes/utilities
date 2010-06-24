@@ -1,12 +1,22 @@
 #!/usr/bin/env ruby
-
-# Delete occurrences of the given pattern from STDIN.  Useful for canned regexes (over say, s/pattern/d in vim).
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
-if ARGV.length != 1
-  puts "Usage: #{$PROGRAM_NAME} pattern | --erb | --sh-comment"
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help | --erb | --sh-comment | pattern]
+
+Delete occurrences of the given pattern from STDIN.  Useful for canned regexes (over say, s/pattern/d in vim).
+
+  --help            Show this help text.
+  --erb             Canned:  ERB (embedded Ruby) blocks.
+  --sh-comment      Canned:  Shell script comments (Ruby, Perl, Bash, etc.).
+  pattern           Create your own regex using PCRE.
+EOF
   exit(-1)
+end
+
+if ARGV.length != 1
+  show_usage
 end
 
 pattern = case ARGV[0]
