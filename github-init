@@ -17,14 +17,16 @@ EOF
 fi
 
 GITHUB_USERNAME='benjaminoakes'
-echo Creating github repository $NAME
+REPOSITORY_NAME="$1"
 
-mkdir $NAME
-cd $NAME
+echo Creating github repository $REPOSITORY_NAME
+
+mkdir "$REPOSITORY_NAME"
+cd "$REPOSITORY_NAME"
 git init
 touch README
 git add README
 git commit -m 'first commit'
-git remote add origin "git@github.com:$GITHUB_USERNAME/$NAME.git"
+git remote add origin "git@github.com:$GITHUB_USERNAME/$REPOSITORY_NAME.git"
 git push origin master
 
