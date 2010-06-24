@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+
+# I typically write myself reminders using TODO and FIXME when I code, just so I can catch them before commiting changes to version control.  This is here to help automate that.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+# # Assumes a "patchfile" type of output.
+# DIFF_COMMAND = 'svn diff'
+# DIFF_COMMAND = 'bzr diff'
+DIFF_COMMAND = 'git diff'
+
+MARKERS = [/TODO/, /FIXME/]
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help]
+
+Check a diff for certain conventional markers.
+
+  --help                Show this help text.
+EOF
+  # TODO --command=COMMAND     Use the specified command to get the diff.
+  exit(-1)
+end
+
+def diff
+  return %x(#{DIFF_COMMAND})
+end
+
+def diff_lines_containing_markers
+  lines_with_context = []
+  
+  lines = diff.split(/\n/)
+
+  lines.each_with_index do |line, index|
+    if MARKERS.any? {|m| m.match line }
+      line_with_context = ""
+      
+      (-2..2).each do |offset|
+        line_with_context << lines[index + offset] + "\n"
+      end
+
+      lines_with_context << line_with_context
+    end
+  end
+
+  return lines_with_context
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+# Check diff for TODOs and FIXMEs.  Review each one.
+diff_lines_containing_markers.each do |line_with_contex|
+  puts line_with_contex
+  puts
+
+  print "(Hit enter to continue) "
+  gets
+end
+
