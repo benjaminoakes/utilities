@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+# Simple, but I've needed it a number of times.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] arg1 arg2 ... argN
+
+Compute the average of the arguments.
+
+  --help      Show this help text.
+EOF
+end
+
+if ARGV.empty? || ARGV.any? { |a| '--help' == a }
+  show_usage
+else
+  sum = 0.0
+  count = ARGV.length
+  
+  ARGV.each do |argument|
+    number = argument.to_f
+    sum += number
+  end
+  
+  average = sum / count
+  puts average
+end
+
