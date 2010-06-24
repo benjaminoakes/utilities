@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-# Truncate a string given via STDIN.
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
 class String
@@ -14,9 +12,19 @@ class String
   end
 end
 
-if ARGV.length != 1
-  puts "Usage: #{$PROGRAM_NAME} length"
-  exit
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [ --help | length ]"
+
+Truncate a string given via STDIN.
+
+  --help      Show this help text.
+EOF
+  exit(-1)
+end
+
+if ARGV.length != 1 || ARGV.any? { |a| '--help' == a }
+  show_usage
 end
 
 length = ARGV[0].to_i
