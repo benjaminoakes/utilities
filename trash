@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+# Nicer than accidentally forgetting you don't have rm set up a certain way on a new machine...
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'fileutils'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] [--verbose] filename
+
+Move files to the trash giving them a safe name based on the current time.
+
+  --help        Show this help text.
+  --verbose     Show what's happening.
+  filename      Unwanted file.
+EOF
+  exit(-1)
+end
+
+OPTIONS = {}
+
+if ARGV.delete('--verbose')
+  OPTIONS[:verbose] = true
+end
+
+if ARGV.empty? || ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+HOME = File.expand_path('~')
+TRASH = File.join(HOME, '.Trash')
+
+ARGV.each do |filename|
+  unless File.directory?(filename)
+    if File.exist?(filename)
+      extension = File.extname(filename)
+      base_name = File.basename(filename, extension)
+
+      # To prevent overwriting of files with the same name already in the trash
+      safe_trash_name = TRASH + '/' + base_name + ' ' + Time.now.strftime('%Y-%m-%d-%H-%M-%S') + extension
+
+      # FIXME handle directories correctly
+      # TODO handle when the file is on a different volume better (keep it on the volume; don't move it to where home is)
+      FileUtils.move(filename, safe_trash_name, OPTIONS)
+    else
+      STDERR.puts("#{$PROGRAM_NAME}:  No such file: #{filename.inspect}")
+      exit(-1)
+    end
+  end
+end
+
