@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 # Markdown to HTML converter.  (I'm pretty sure there's something like this included in BlueCloth now, though...)
 # 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
@@ -6,11 +7,21 @@
 require 'rubygems'
 require 'bluecloth' # Needed to be installed on OS X 10.5
 
-input = ''
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] filename
 
-ARGF.each_line do |line|
-  input << line
+Run a file through Markdown (BlueCloth) and spit out the corresponding HTML.
+
+  --help      Show this help text.
+  filename    Input file.
+EOF
+  exit(-1)
 end
 
-puts BlueCloth.new(input).to_html
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+puts BlueCloth.new(ARGF.readlines).to_html
 

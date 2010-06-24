@@ -11,6 +11,7 @@ Usage: #{$PROGRAM_NAME} [--help] filename
 Run a file through ERB and spit out the result.
 
   --help      Show this help text.
+  filename    Input file.
 EOF
   exit(-1)
 end
