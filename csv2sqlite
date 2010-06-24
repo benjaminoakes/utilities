@@ -1,18 +1,27 @@
 #!/usr/bin/env ruby
-# Turn one or more CSV files into tables in a sqlite3 database.
-# 
-# This outputs SQL CREATE and INSERT statements that you'll have to pipe into sqlite3.  It should work with other RDBMSes, but I haven't tested.
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
 require 'csv'
 require 'stringio'
 
+def show_usage
+  puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] csv_file_1 ... csv_file_n
+
+Turn one or more CSV files into tables in a sqlite3 database.
+
+This outputs SQL CREATE and INSERT statements that you'll have to pipe into sqlite3.  It should work with other RDBMSes, but I haven't tested.
+
+  --help      Show this help text.
+  csv_files   Input files to build CREATE and INSERT statements from.
+EOF
+  exit(-1)
+end
+
 csv_files = ARGV[0, ARGV.length]
 
-if csv_files.nil? || csv_files.empty?
-  puts "Usage: #{$PROGRAM_NAME} csv_file_1 ... csv_file_n"
-  exit(-1)
+if csv_files.nil? || csv_files.empty? || ARGV.any? { |a| '--help' == a }
+  show_usage
 end
 
 csv_files.each do |csv_file|
