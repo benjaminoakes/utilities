@@ -1,7 +1,21 @@
 #!/usr/bin/env ruby
-# Checks a volume's free space.  Meant for a cron job.
-# 
+
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [ --help ]
+
+Checks a volume's free space.  Meant for a cron job.
+
+  --help      Show this help text.
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
 
 VOLUME_NAME = 'Time Machine'
 VOLUME_PATH = "/Volumes/#{VOLUME_NAME}"
