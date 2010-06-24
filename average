@@ -12,6 +12,7 @@ Compute the average of the arguments.
 
   --help      Show this help text.
 EOF
+  exit(-1)
 end
 
 if ARGV.empty? || ARGV.any? { |a| '--help' == a }
