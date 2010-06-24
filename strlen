@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+if ARGV.empty? || ARGV.any? { |a| '--help' == a }
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] string1 string2 ... stringN
+
+Print lengths of strings.
+
+  --help      Show this help text.
+EOF
+else
+  ARGV.each do |string|
+    puts "#{string.length} #{string}"
+  end
+end
+
