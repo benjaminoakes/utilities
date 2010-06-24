@@ -1,0 +1,91 @@
+#!/usr/bin/env ruby
+# Turn backup directories into a git repository.
+# 
+# Problem: You have a bunch of directories like this:
+# 
+#     foo_backup/foo_2008-04-21/
+#     foo_backup/foo_2008-05-03/
+#     foo_backup/foo_2008-08-25/
+#     foo_backup/foo_2008-09-17/
+#     foo_backup/foo_2009-01-02/
+# 
+# ...because you weren't using version control.  You want to start using git.
+# 
+# Solution:
+# 
+#     backups2git foo_backup foo
+# 
+# NOTE: Be careful with this, since it does `rm -rf` and so forth.  I recommend that you make a new temp directory with copies of the backups and then run the program with those -- just in case.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+# This is defined by Ruby normally.
+$VERBOSE = true
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] source_directory output_directory
+
+  --help                Show this help text.
+  source_directory      Should contain a series of backup directories. Their names will be used as commit messages.
+  output_directory      Will become a git repository with all of the backup directories as changesets.
+EOF
+  exit(-1)
+end
+
+def execute(command)
+  puts command
+  puts %x(#{command})
+end
+
+if __FILE__ == $PROGRAM_NAME
+  if ARGV.any? { |a| '--help' == a } ||
+      2 != ARGV.length
+    show_usage
+  end
+  
+  source_directory = ARGV[0]
+  output_directory = ARGV[1]
+  
+  if $VERBOSE
+    puts "source_directory: #{source_directory.inspect}"
+    puts "output_directory: #{output_directory.inspect}"
+    puts
+  end
+  
+  if File.directory?(source_directory)
+    backup_folders = Dir.entries(source_directory)
+    backup_folders.delete(".")
+    backup_folders.delete("..")
+    backup_folders.delete(".DS_Store")
+    backup_folders.sort!
+  
+    if $VERBOSE
+      puts "backup_folders:"
+      puts backup_folders
+    end
+  else
+    raise "source_directory #{source_directory.inspect} does not exist!"
+  end
+  
+  if File.directory?(output_directory)
+    raise "output_directory #{output_directory.inspect} already exists!"
+  else
+    puts "Creating git repository in #{output_directory.inspect}..."
+    execute("mkdir #{output_directory.inspect}")
+    execute("cd #{output_directory.inspect} && git init")
+    puts
+  end
+  
+  backup_folders.each do |folder|
+    puts folder
+    execute("rm -rfv #{output_directory}/*") # Should retain the .git directory
+    execute("cp -Rv #{(source_directory + '/' + folder + '/').inspect} #{output_directory}")
+    execute("find #{output_directory.inspect} -name '.svn' -exec rm -rf {} +")
+    execute("cd #{output_directory.inspect} && git add *")
+    execute("cd #{output_directory.inspect} && git status")
+    execute("cd #{output_directory.inspect} && git commit -m #{folder.inspect}")
+    puts 
+  end
+end
+
