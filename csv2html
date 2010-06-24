@@ -1,11 +1,23 @@
 #!/usr/bin/env ruby
-# Turn one or more CSV files into HTML tables.
-# 
-# Quick and dirty.
-# 
+
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
 require 'csv'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [ --help ]
+
+Turn one or more CSV files into HTML tables.
+
+  --help      Show this help text.
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
 
 puts '<html>'
 puts '<body>'
