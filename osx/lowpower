@@ -7,6 +7,8 @@ Usage: $0 [--help]
 
 Make changes to the system to reduce power usage (i.e. reduce screen brightness, disable AirPort, etc.).  Must be run as root.
 
+Useful for portable Macs.
+
   --help      Show this help text.
 EOF
   exit -1
