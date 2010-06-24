@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+# I noticed I miss a step or two out of this fairly frequently.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: make_script_executable [--help] filename
+
+Makes a script executable and makes sure it follows some related conventions.
+
+  --help        Show this help text.
+  filename      Target script filename.
+EOF
+  exit(-1)
+end
+
+if ARGV.length != 1 || ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+filename = ARGV[0]
+
+File.open(filename) do |file|
+  first_line = file.gets
+
+  if first_line.nil? || !first_line.match(/^#!/)
+    puts "#{$PROGRAM_NAME}:  You don't have a magic cookie on the first line."
+    exit(-1)
+  end
+end
+
+no_extension = filename.gsub(/\..*?$/, '')
+
+%x(mv #{filename} #{no_extension})
+%x(chmod 700 #{no_extension})
+
