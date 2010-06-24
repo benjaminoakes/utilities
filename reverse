@@ -1,32 +1,22 @@
 #!/usr/bin/env ruby
 
-# Reverse the lines of a plain text file.
-# 
-# Reads from a given filename, or if that's not present, standard-in
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
-if 0 == ARGV.length
-  input = STDIN.read
-  
-  lines = []
-  
-  input.split("\n").each do |line|
-    lines << line
-  end
-  
-  puts lines.reverse
-elsif 1 == ARGV.length
-  filename = ARGV[0]
-  
-  begin
-    File.open(filename, 'r') do |file|
-      puts file.readlines.reverse
-    end
-  rescue Errno::ENOENT => e
-    puts e.message
-  end
-else
-  puts "Usage: #{$PROGRAM_NAME} [filename]"
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] filename
+
+Reverse the lines of a plain text file.
+
+  --help      Show this help text.
+  filename    Input file.
+EOF
+  exit(-1)
 end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+puts ARGF.readlines.reverse
 
