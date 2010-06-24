@@ -1,11 +1,25 @@
 #!/usr/bin/env ruby
-# Textile to HTML converter.
-# 
+
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
 require 'rubygems'
 require 'redcloth'
 
-lines = ARGF.readlines
-puts RedCloth.new(lines.join).to_html
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] filename
+
+Run a file through Textile (RedCloth) and spit out the corresponding HTML.
+
+  --help      Show this help text.
+  filename    Input file.
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+puts RedCloth.new(ARGF.readlines.join).to_html
 

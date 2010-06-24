@@ -23,5 +23,5 @@ if ARGV.any? { |a| '--help' == a }
   show_usage
 end
 
-puts BlueCloth.new(ARGF.readlines).to_html
+puts BlueCloth.new(ARGF.readlines.join).to_html
 
