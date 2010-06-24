@@ -1,13 +1,25 @@
 #!/usr/bin/env ruby
-
-# Print all unique lines to STDOUT (i.e., remove duplicate lines).
-# 
-# It's like `uniq`, but `uniq` only works on adjacent lines.  The first occurrence gets preference.
-#
-# TODO This could probably have a little higher performance using a Hash instead (needs Ruby 1.9 for ordering).
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} filename
+
+Print all unique lines (from a file or STDIN) to STDOUT (i.e., remove duplicate lines).
+
+It's like uniq, but uniq only works on adjacent lines.  The first occurrence gets preference.
+
+  --help        Show this help text.
+  filename      Input filename
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+# TODO This could probably have a little higher performance using a Hash instead (needs Ruby 1.9 for ordering).
 lines = ARGF.read.split("\n")
 puts lines.uniq
 
