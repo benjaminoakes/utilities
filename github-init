@@ -4,9 +4,19 @@
 # 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
-GITHUB_USERNAME='benjaminoakes'
+if [ "$1" == "--help" ] || [ "$1" == "" ]; then
+  cat <<EOF
+Usage: $0 [--help] repository_name
 
-NAME=$1 
+Scripts the process of setting up a GitHub repository locally.
+
+  --help              Show this help text.
+  repository_name     Name of the repository
+EOF
+  exit -1
+fi
+
+GITHUB_USERNAME='benjaminoakes'
 echo Creating github repository $NAME
 
 mkdir $NAME
