@@ -26,6 +26,8 @@ def show_usage
   STDERR.puts <<EOF
 Usage: #{$PROGRAM_NAME} [--help] source_directory output_directory
 
+Turn backup directories into a git repository.
+
   --help                Show this help text.
   source_directory      Should contain a series of backup directories. Their names will be used as commit messages.
   output_directory      Will become a git repository with all of the backup directories as changesets.
