@@ -1,5 +1,18 @@
 #!/usr/bin/env bash
+
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+if [ "$1" == "--help" ]; then
+  cat <<EOF
+Usage: $0 [--help]
+
+Append uptime output to a logfile at ~/log/uptime.log.  Useful for crontabs.
+
+  --help      Show this help text.
+EOF
+  exit -1
+fi
+
 
 mkdir -p "$HOME/log"
 uptime >> "$HOME/log/uptime.log"
