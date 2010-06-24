@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
-# What `man` is to C and `ri` is to Ruby, `matlabdoc` is to Matlab
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
-if [ "$1" = "" -o "$2" != "" ]; then
-  echo "Usage: $(basename $0) term"
+if [ "$1" == "--help" ] || [ "$1" = "" -o "$2" != "" ]; then
+  cat <<EOF
+Usage: $0 [--help] term
+
+What man is to C and ri is to Ruby, $0 is to Matlab.
+
+  --help      Show this help text.
+  term        The term to look up.
+EOF
   exit -1
 fi
 
