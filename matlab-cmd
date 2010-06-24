@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
-# Easily invoke the command-line version of Matlab.
-# 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+if [ "$1" == "--help" ]; then
+  cat <<EOF
+Usage: $0 [--help]
+
+Easily invoke the command-line version of Matlab.
+
+  --help      Show this help text.
+EOF
+  exit -1
+fi
 
 matlab -nosplash -nodesktop $*
 
