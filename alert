@@ -7,3 +7,5 @@
 # # FIXME
 # osascript -e 'tell app "Finder" to display alert "TODO"'
 
+echo "Non-functional.  Nothing to see here."
+
