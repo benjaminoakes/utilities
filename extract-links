@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'open-uri'
+
+require 'rubygems'
+require 'hpricot'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] extension html_url1 [ html_url2 ... html_urlN ]
+
+Extract links from a webpage by filetype.  Nice for passing off to wget or curl.
+
+  --help        Show this help text.
+  extension     File extension to look for (e.g., mp3, pdf, etc.)
+  html_urls     Links to HTML documents to scan.
+
+Example:
+
+    $ #{$PROGRAM_NAME} mp3 http://johnvanderslice.com/romanian-names
+    http://johnvanderslice.com/mp3sjv/romanian-names/Fetal%20Horses.mp3
+    http://johnvanderslice.com/mp3sjv/romanian-names/Too%20Much%20Time.mp3
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+extension = ARGV.shift
+
+if ARGV.empty? 
+  show_usage
+end
+
+ARGV.each do |html_url|
+  doc = Hpricot.parse(open(html_url))
+
+  # TODO would it be better to just search for URLs instead?
+  doc.search('a').each do |anchor|
+    href = anchor['href'] # TODO Probably need to add the server in some cases
+
+    if href.match(/\.#{extension}$/i)
+      puts href
+    end
+  end
+end
+
