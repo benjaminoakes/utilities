@@ -3,7 +3,7 @@
 
 def show_usage
   STDERR.puts <<EOF
-Usage: #{$PROGRAM_NAME} filename
+Usage: #{$PROGRAM_NAME} [--help] filename
 
 Print all unique lines (from a file or STDIN) to STDOUT (i.e., remove duplicate lines).
 
@@ -19,7 +19,5 @@ if ARGV.any? { |a| '--help' == a }
   show_usage
 end
 
-# TODO This could probably have a little higher performance using a Hash instead (needs Ruby 1.9 for ordering).
-lines = ARGF.read.split("\n")
-puts lines.uniq
+puts ARGF.readlines.uniq
 
