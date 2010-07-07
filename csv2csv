@@ -1,0 +1,119 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <benjamin.oakes@yale.edu>
+
+require 'csv'
+require 'fileutils'
+require 'yaml'
+
+def show_usage
+  # or something like this?
+  # __options:
+  #   unique: true
+  #   output_style: SAS
+
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--debug] [--help] [--output-style=SAS] [--unique] csv_file rule_file
+
+Transform a CSV file based on rules.
+
+  --debug                 Turn on debugging information (and discard the output).
+  --help                  Show this help text.
+  --output-style=SAS      Adjust the CSV output for SAS.
+                          (SAS is the only supported value at the moment.)
+  --unique                Remove duplicate output rows.
+  csv_file                Input CSV file.
+  rule_file               Rule file defining output.
+
+Rule file format
+----------------
+
+The rule file is a YAML-based format.  Example:
+
+    DEFAULTS: &DEFAULTS
+      - first name
+      - last name
+    my_first_output_file:
+      - *DEFAULTS                    # Include the columns defined as DEFAULTS (first and last name)
+      - first_column                 # Only this specific column
+      - AB_*                         # All columns beginning with AB_
+      - /^a regular expression$/     # All columns matching this PCRE
+    my_second_output_file:
+      - *DEFAULTS
+      - AB_*
+      - CD_*                         # All columns beginning with CD_
+EOF
+  exit -1
+end
+
+def process_rules(rules)
+  processed_rules = rules
+
+  # Drop all capital keys (assumed to be groups)
+  processed_rules.delete_if { |key, value| key.match(/^[^a-z]+$/) }
+
+  processed_rules.keys.each do |key|
+    # Not sure why, but YAML was treating the groups (e.g., DEFAULTS) as nested lists
+    processed_rules[key] = processed_rules[key].flatten
+
+    processed_rules[key].map! do |selection|
+      if selection.match(/^\/(.*?)\/$/) # Regexp input syntax, e.g. /foobar/
+        Regexp.new(selection[1, selection.length - 2]) # Drop the slashes -- they're just convention
+      else
+        # Turn globs into regexps
+        Regexp.new('^' + selection.gsub('*', '.*?') + '$')
+      end
+    end
+  end
+
+  return processed_rules
+end
+
+if __FILE__ == $PROGRAM_NAME
+  if 2 != ARGV.length || ARGV.any? { |a| '--help' == a }
+    show_usage
+  end
+  
+  csv_filename = ARGV[0]
+  rule_filename = ARGV[1]
+  output_directory = File.basename(csv_filename, '.csv')
+  FileUtils.mkdir_p(output_directory)
+  
+  rules = YAML::load(File.open(rule_filename))
+  rules = process_rules(rules)
+
+  data = CSV.parse(File.open(csv_filename).readlines.join)
+  header = data.shift.flatten
+
+  # missing = rules.map { |values| values }.uniq - header
+  # # remainder
+
+  # # TODO output missing option?
+  # # TODO output remainder option?
+
+  # if !missing.empty?
+  #   fail
+  # end
+
+  # We want the same timestamp for all of them
+  timestamp = Time.now.strftime('date_%Y-%m-%d_time_%H-%M-%S')
+
+  rules.each do |base_output_filename, selection_regexps|
+    output_filename = File.join(output_directory, "#{base_output_filename}_#{timestamp}.csv")
+    puts "Output filename: #{output_filename}"
+    # puts "selection_regexps: #{(selection_regexps).inspect}"
+
+    File.open(output_filename, 'w') do |file|
+      CSV::Writer.generate(file) do |csv|
+        matching_columns = selection_regexps.map { |selection_regexp| header.grep(selection_regexp) }.flatten
+        csv << matching_columns
+
+        # TODO unless --debug
+        data.each do |row|
+          matching_data = matching_columns.map { |column_name| row[header.index(column_name)] }
+          csv << matching_data
+        end
+      end
+    end
+  end
+end
+
