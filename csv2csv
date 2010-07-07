@@ -68,6 +68,10 @@ def process_rules(rules)
   return processed_rules
 end
 
+def matching_columns_for(header, selection_regexps)
+  return selection_regexps.map { |selection_regexp| header.grep(selection_regexp) }.flatten
+end
+
 if __FILE__ == $PROGRAM_NAME
   csv_filename = nil
   rule_filename = nil
@@ -106,18 +110,28 @@ if __FILE__ == $PROGRAM_NAME
   rules = YAML::load(File.open(rule_filename))
   rules = process_rules(rules)
 
+  header = CSV.parse(File.open(csv_filename).readlines.first).flatten
+
+  if $DEBUG
+    puts "Header:"
+    puts "======="
+    puts
+    puts header
+    puts
+  end
+
+  all_column_selections = rules.map { |key, values| values }.flatten.uniq
+  remainder = header - matching_columns_for(header, all_column_selections)
+  missing = all_column_selections.select { |regexp| !header.any? { |column_name| regexp.match(column_name) } }
+
+  if !missing.empty?
+    STDERR.puts "ERROR: No column name matches for:"
+    STDERR.puts ""
+    STDERR.puts missing.map { |r| r.inspect }
+  end
+
   data = CSV.parse(File.open(csv_filename).readlines.join)
-  header = data.shift.flatten
-
-  # missing = rules.map { |values| values }.uniq - header
-  # # remainder
-
-  # # TODO output missing option?
-  # # TODO output remainder option?
-
-  # if !missing.empty?
-  #   fail
-  # end
+  data.shift # Get rid of the header
 
   # We want the same timestamp for all of them
   timestamp = Time.now.strftime('date_%Y-%m-%d_time_%H-%M-%S')
@@ -140,7 +154,7 @@ if __FILE__ == $PROGRAM_NAME
       puts selection_regexps.map { |r| r.inspect }
     end
 
-    matching_columns = selection_regexps.map { |selection_regexp| header.grep(selection_regexp) }.flatten
+    matching_columns = matching_columns_for(header, selection_regexps)
 
     if $DEBUG
       puts
