@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Author: Benjamin Oakes <benjamin.oakes@yale.edu>
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
 
 require 'csv'
 require 'fileutils'
@@ -69,12 +69,37 @@ def process_rules(rules)
 end
 
 if __FILE__ == $PROGRAM_NAME
-  if 2 != ARGV.length || ARGV.any? { |a| '--help' == a }
-    show_usage
+  csv_filename = nil
+  rule_filename = nil
+  options = {}
+
+  ARGV.each do |argument|
+    case argument
+    when '--debug'
+      $DEBUG = true
+    when '--help'
+      show_usage
+    when '--output-style=SAS'
+      options['output-style'] = 'SAS'
+    when '--unique'
+      options['unique'] = true
+    when /^--/
+      show_usage
+    else
+      if csv_filename.nil?
+        csv_filename = argument
+      elsif rule_filename.nil?
+        rule_filename = argument
+      else
+        show_usage
+      end
+    end
   end
   
-  csv_filename = ARGV[0]
-  rule_filename = ARGV[1]
+  if csv_filename.nil? || rule_filename.nil?
+    show_usage
+  end
+
   output_directory = File.basename(csv_filename, '.csv')
   FileUtils.mkdir_p(output_directory)
   
