@@ -101,7 +101,7 @@ if __FILE__ == $PROGRAM_NAME
   end
 
   output_directory = File.basename(csv_filename, '.csv')
-  FileUtils.mkdir_p(output_directory)
+  FileUtils.mkdir_p(output_directory) unless $DEBUG
   
   rules = YAML::load(File.open(rule_filename))
   rules = process_rules(rules)
@@ -124,18 +124,41 @@ if __FILE__ == $PROGRAM_NAME
 
   rules.each do |base_output_filename, selection_regexps|
     output_filename = File.join(output_directory, "#{base_output_filename}_#{timestamp}.csv")
+
+    if $DEBUG
+      puts
+    end
+
     puts "Output filename: #{output_filename}"
-    # puts "selection_regexps: #{(selection_regexps).inspect}"
+    puts '===================================' if $DEBUG
+    
+    if $DEBUG
+      puts
+      puts "Selection Regexps:"
+      puts "------------------"
+      puts
+      puts selection_regexps.map { |r| r.inspect }
+    end
 
-    File.open(output_filename, 'w') do |file|
-      CSV::Writer.generate(file) do |csv|
-        matching_columns = selection_regexps.map { |selection_regexp| header.grep(selection_regexp) }.flatten
-        csv << matching_columns
+    matching_columns = selection_regexps.map { |selection_regexp| header.grep(selection_regexp) }.flatten
 
-        # TODO unless --debug
-        data.each do |row|
-          matching_data = matching_columns.map { |column_name| row[header.index(column_name)] }
-          csv << matching_data
+    if $DEBUG
+      puts
+      puts "Matching Columns:"
+      puts "-----------------"
+      puts 
+      puts matching_columns
+    end
+
+    unless $DEBUG
+      File.open(output_filename, 'w') do |file|
+        CSV::Writer.generate(file) do |csv|
+          csv << matching_columns
+
+          data.each do |row|
+            matching_data = matching_columns.map { |column_name| row[header.index(column_name)] }
+            csv << matching_data
+          end
         end
       end
     end
