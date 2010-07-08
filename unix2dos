@@ -23,6 +23,6 @@ if ARGV.any? { |a| '--help' == a }
   show_usage
 end
 
-# Sometimes conventions are used in a single file, hence both are specified in the regexp.
+# Sometimes both conventions are used in a single file, hence both are specified in the regexp.
 puts ARGF.readlines.map { |l| l.gsub(/[\r\n]+/, "\r\n") }
 
