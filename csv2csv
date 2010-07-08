@@ -23,10 +23,12 @@ Usage: #{$PROGRAM_NAME} [--debug] [--help] [--output-style=XYZ] [--unique] csv_f
 
 Transform a CSV file based on rules.
 
+This is primarily for dividing up files.  If you're going to do much by the way of manipulation, you might also check out csv2sqlite.
+
   --dry-run               Just show what would happen; don't do anything yet.
   --help                  Show this help text.
   --output-style=name     Adjust the CSV output for certain programs.
-                          Supported values:  SAS, Excel-2003.
+                          Supported values:  SAS, Excel-2003
   --unique                Remove duplicate output rows.
   csv_file                Input CSV file.
   rule_file               Rule file defining output.
