@@ -58,9 +58,11 @@ def process_rules(rules)
     processed_rules[key].map! do |selection|
       if selection.match(/^\/(.*?)\/$/) # Regexp input syntax, e.g. /foobar/
         Regexp.new(selection[1, selection.length - 2]) # Drop the slashes -- they're just convention
-      else
+      elsif selection.match(/\*/)
         # Turn globs into regexps
         Regexp.new('^' + selection.gsub('*', '.*?') + '$')
+      else
+        selection
       end
     end
   end
