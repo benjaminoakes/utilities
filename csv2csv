@@ -12,14 +12,14 @@ def show_usage
   #   output_style: SAS
 
   STDERR.puts <<EOF
-Usage: #{$PROGRAM_NAME} [--debug] [--help] [--output-style=SAS] [--unique] csv_file rule_file
+Usage: #{$PROGRAM_NAME} [--debug] [--help] [--output-style=XYZ] [--unique] csv_file rule_file
 
 Transform a CSV file based on rules.
 
   --debug                 Turn on debugging information (and discard the output).
   --help                  Show this help text.
-  --output-style=SAS      Adjust the CSV output for SAS.
-                          (SAS is the only supported value at the moment.)
+  --output-style=XYZ      Adjust the CSV output for certain programs.
+                          Supported values:  SAS, Excel-2003.
   --unique                Remove duplicate output rows.
   csv_file                Input CSV file.
   rule_file               Rule file defining output.
@@ -75,7 +75,9 @@ end
 if __FILE__ == $PROGRAM_NAME
   csv_filename = nil
   rule_filename = nil
-  options = {}
+  options = {
+    'output-style' => []
+  }
 
   ARGV.each do |argument|
     case argument
@@ -84,7 +86,13 @@ if __FILE__ == $PROGRAM_NAME
     when '--help'
       show_usage
     when '--output-style=SAS'
-      options['output-style'] = 'SAS'
+      options['output-style'] << 'SAS'
+    when '--output-style=Excel-2003'
+      options['output-style'] << 'Excel-2003'
+    # From http://office.microsoft.com/en-us/excel-help/excel-specifications-and-limits-HP005199291.aspx:
+    # 
+    #     Worksheet size: 65,536 rows by 256 column
+    # 
     when '--unique'
       options['unique'] = true
     when /^--/
