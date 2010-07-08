@@ -102,8 +102,6 @@ if __FILE__ == $PROGRAM_NAME
       show_usage
     when '--output-style=SAS'
       options['output-style'] << 'SAS'
-      STDERR.puts 'Not yet implemented: --output-style=SAS'
-      exit -1
     when '--output-style=Excel-2003'
       options['output-style'] << 'Excel-2003'
     when '--unique'
@@ -199,14 +197,22 @@ if __FILE__ == $PROGRAM_NAME
     end
 
     unless $DRY_RUN
-      # TODO split into multiple files if options['output-style'].include?('Excel-2003')
+      # TODO split into multiple files if options['output-style'].include?('Excel-2003') and more than EXCEL_2003_ROW_LIMIT rows
       File.open(output_filename, 'w') do |file|
         CSV::Writer.generate(file) do |csv|
           csv << matching_columns
 
           data.each do |row|
             matching_data = matching_columns.map { |column_name| row[header.index(column_name)] }
-            csv << matching_data
+
+            formatted_data = matching_data
+
+            if options['output-style'].include?('SAS')
+              # SAS wants dots instead of empty cells.  I don't know why.
+              formatted_data.map! { |cell| (cell.nil? || cell.empty?) ? '.' : cell }
+            end
+
+            csv << formatted_data
           end
         end
       end
