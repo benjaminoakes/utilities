@@ -106,8 +106,6 @@ if __FILE__ == $PROGRAM_NAME
       options['output-style'] << 'Excel-2003'
     when '--unique'
       options['unique'] = true
-      STDERR.puts 'Not yet implemented: --unique'
-      exit -1
     when /^--/
       show_usage
     else
@@ -202,7 +200,7 @@ if __FILE__ == $PROGRAM_NAME
         CSV::Writer.generate(file) do |csv|
           csv << matching_columns
 
-          data.each do |row|
+          compiled_data = data.map do |row|
             matching_data = matching_columns.map { |column_name| row[header.index(column_name)] }
 
             formatted_data = matching_data
@@ -212,11 +210,21 @@ if __FILE__ == $PROGRAM_NAME
               formatted_data.map! { |cell| (cell.nil? || cell.empty?) ? '.' : cell }
             end
 
-            csv << formatted_data
+            formatted_data
+          end
+
+          if options['unique']
+            compiled_data.uniq!
+          end
+
+          compiled_data.each do |row|
+            csv << row
           end
         end
       end
     end
   end
 end
+
+# TODO remainder as an option?
 
