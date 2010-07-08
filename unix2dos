@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] [filename]
+
+Converts Unix newlines to DOS newlines.  Prints to STDOUT.
+
+  --help      Show this help text.
+
+Example:
+
+  # Making a copy:
+  $ #{$PROGRAM_NAME} file_with_unix_newlines > file_with_dos_newlines
+  # Overwriting
+  $ #{$PROGRAM_NAME} filename > filename
+EOF
+  exit -1
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+# Sometimes conventions are used in a single file, hence both are specified in the regexp.
+puts ARGF.readlines.map { |l| l.gsub(/[\r\n]+/, "\r\n") }
+
