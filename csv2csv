@@ -5,6 +5,13 @@ require 'csv'
 require 'fileutils'
 require 'yaml'
 
+# From http://office.microsoft.com/en-us/excel-help/excel-specifications-and-limits-HP005199291.aspx:
+# 
+#     Worksheet size: 65,536 rows by 256 columns
+# 
+EXCEL_2003_ROW_LIMIT = 65_536
+EXCEL_2003_COLUMN_LIMIT = 256
+
 def show_usage
   # or something like this?
   # __options:
@@ -16,9 +23,9 @@ Usage: #{$PROGRAM_NAME} [--debug] [--help] [--output-style=XYZ] [--unique] csv_f
 
 Transform a CSV file based on rules.
 
-  --debug                 Turn on debugging information (and discard the output).
+  --dry-run               Just show what would happen; don't do anything yet.
   --help                  Show this help text.
-  --output-style=XYZ      Adjust the CSV output for certain programs.
+  --output-style=name     Adjust the CSV output for certain programs.
                           Supported values:  SAS, Excel-2003.
   --unique                Remove duplicate output rows.
   csv_file                Input CSV file.
@@ -41,8 +48,14 @@ The rule file is a YAML-based format.  Example:
       - *DEFAULTS
       - AB_*
       - CD_*                         # All columns beginning with CD_
+
+This will create two output files in a directory named after csv_file, each output file having the specified filename and columns.  Timestamps are added for convenience.
 EOF
   exit -1
+end
+
+def warn(message)
+  STDERR.puts "WARNING: #{message}"
 end
 
 def process_rules(rules)
@@ -70,8 +83,8 @@ def process_rules(rules)
   return processed_rules
 end
 
-def matching_columns_for(header, selection_regexps)
-  return selection_regexps.map { |selection_regexp| header.grep(selection_regexp) }.flatten
+def matching_columns_for(header, selectors)
+  return selectors.map { |selector| header.grep(selector) }.flatten
 end
 
 if __FILE__ == $PROGRAM_NAME
@@ -83,20 +96,20 @@ if __FILE__ == $PROGRAM_NAME
 
   ARGV.each do |argument|
     case argument
-    when '--debug'
-      $DEBUG = true
+    when '--dry-run'
+      $DRY_RUN = true
     when '--help'
       show_usage
     when '--output-style=SAS'
       options['output-style'] << 'SAS'
+      STDERR.puts 'Not yet implemented: --output-style=SAS'
+      exit -1
     when '--output-style=Excel-2003'
       options['output-style'] << 'Excel-2003'
-    # From http://office.microsoft.com/en-us/excel-help/excel-specifications-and-limits-HP005199291.aspx:
-    # 
-    #     Worksheet size: 65,536 rows by 256 column
-    # 
     when '--unique'
       options['unique'] = true
+      STDERR.puts 'Not yet implemented: --unique'
+      exit -1
     when /^--/
       show_usage
     else
@@ -115,14 +128,15 @@ if __FILE__ == $PROGRAM_NAME
   end
 
   output_directory = File.basename(csv_filename, '.csv')
-  FileUtils.mkdir_p(output_directory) unless $DEBUG
   
   rules = YAML::load(File.open(rule_filename))
   rules = process_rules(rules)
 
-  header = CSV.parse(File.open(csv_filename).readlines.first).flatten
+  csv_lines = File.open(csv_filename).readlines
 
-  if $DEBUG
+  header = CSV.parse(csv_lines.first).flatten
+
+  if $DRY_RUN
     puts "Header:"
     puts "======="
     puts
@@ -132,7 +146,7 @@ if __FILE__ == $PROGRAM_NAME
 
   all_column_selections = rules.map { |key, values| values }.flatten.uniq
   remainder = header - matching_columns_for(header, all_column_selections)
-  missing = all_column_selections.select { |regexp| !header.any? { |column_name| regexp.match(column_name) } }
+  missing = all_column_selections.select { |selector| !header.any? { |column_name| column_name.match(selector) } }
 
   if !missing.empty?
     STDERR.puts "ERROR: No column name matches for:"
@@ -141,33 +155,42 @@ if __FILE__ == $PROGRAM_NAME
     exit -1
   end
 
-  data = CSV.parse(File.open(csv_filename).readlines.join)
-  data.shift # Get rid of the header
+  unless $DRY_RUN
+    FileUtils.mkdir_p(output_directory)
+
+    data = CSV.parse(csv_lines.join)
+    data.shift # Get rid of the header
+  end
 
   # We want the same timestamp for all of them
   timestamp = Time.now.strftime('date_%Y-%m-%d_time_%H-%M-%S')
 
-  rules.each do |base_output_filename, selection_regexps|
+  rules.each do |base_output_filename, selectors|
     output_filename = File.join(output_directory, "#{base_output_filename}_#{timestamp}.csv")
 
-    if $DEBUG
+    if $DRY_RUN
       puts
     end
 
     puts "Output filename: #{output_filename}"
-    puts '===================================' if $DEBUG
+    puts '===================================' if $DRY_RUN
     
-    if $DEBUG
+    if $DRY_RUN
       puts
-      puts "Selection Regexps:"
-      puts "------------------"
+      puts "Selectors:"
+      puts "----------"
       puts
-      puts selection_regexps.map { |r| r.inspect }
+      puts selectors.map { |r| r.inspect }
     end
 
-    matching_columns = matching_columns_for(header, selection_regexps)
+    matching_columns = matching_columns_for(header, selectors)
 
-    if $DEBUG
+    if options['output-style'].include?('Excel-2003') && matching_columns.length > EXCEL_2003_COLUMN_LIMIT
+      puts if $DRY_RUN
+      warn "Over Excel 2003 column limit for #{base_output_filename.inspect}.  Run with --dry-run to see selected columns."
+    end
+
+    if $DRY_RUN
       puts
       puts "Matching Columns:"
       puts "-----------------"
@@ -175,7 +198,8 @@ if __FILE__ == $PROGRAM_NAME
       puts matching_columns
     end
 
-    unless $DEBUG
+    unless $DRY_RUN
+      # TODO split into multiple files if options['output-style'].include?('Excel-2003')
       File.open(output_filename, 'w') do |file|
         CSV::Writer.generate(file) do |csv|
           csv << matching_columns
