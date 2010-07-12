@@ -208,8 +208,17 @@ if __FILE__ == $PROGRAM_NAME
             formatted_data = matching_data
 
             if options['output-style'].include?('SAS')
-              # SAS wants dots instead of empty cells.  I don't know why.
-              formatted_data.map! { |cell| (cell.nil? || cell.empty?) ? '.' : cell }
+              formatted_data.map! do |cell|
+                # SAS wants dots instead of empty cells.  I don't know why.
+                if cell.nil? || cell.empty?
+                  '.'
+                elsif 't' == cell
+                  1
+                elsif 'f' == cell
+                  0
+                else
+                  cell
+                end
             end
 
             formatted_data
