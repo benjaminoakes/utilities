@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'csv'
+require 'digest/md5'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] filename base_path
+
+Check whether files listed in a CSV file are duplicates.
+
+Format:
+
+left_file,right_file
+file_1.txt,file_to_compare1.html
+file_2.mp3,file_to_compare2.mp3
+file_3.csv,file_to_compare3.xls
+...
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a } || ARGV.length != 2
+  show_usage
+end
+
+base_path = ARGV[1]
+
+first_line = true
+left_index = nil
+right_index = nil
+
+CSV.open(ARGV[0], 'r') do |row|
+  if first_line
+    left_index = row.index('left_file')
+    right_index = row.index('right_file')
+  else
+    left_filename = "#{base_path}\\#{row[left_index]}"
+    left_digest = nil
+    left_digest = Digest::MD5.hexdigest(File.open(left_filename, 'r').readlines.join) unless left_filename.nil?
+    # puts "left_digest: #{(left_digest).inspect}"
+
+    right_filename = "#{base_path}\\#{row[right_index]}"
+    right_digest = nil
+    right_digest = Digest::MD5.hexdigest(File.open(right_filename, 'r').readlines.join) unless right_filename.nil?
+    # puts "right_digest: #{(right_digest).inspect}"
+
+    if left_digest != right_digest
+      puts "Mismatch: #{left_filename}, #{right_filename}"
+    end
+  end
+
+  first_line = false
+end
+
