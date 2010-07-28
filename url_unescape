@@ -5,7 +5,7 @@ require 'cgi'
 
 def show_usage
   STDERR.puts <<EOF
-Usage: #{$PROGRAM_NAME} [--help] [filename
+Usage: #{$PROGRAM_NAME} [--help] [filename]
 
 Unescape URL strings
 
