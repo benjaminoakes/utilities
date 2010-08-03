@@ -219,6 +219,7 @@ if __FILE__ == $PROGRAM_NAME
                 else
                   cell
                 end
+              end
             end
 
             formatted_data
