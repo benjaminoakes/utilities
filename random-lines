@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] [--format=csv] --count=N filename
+
+Pick N random lines from the input file.
+
+  --count=N         How many random content lines to choose.
+  --format=csv      Assume the input file is a CSV file.  (Always include the header.)
+  filename          Input file to process.
+EOF
+  exit -1
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+format = nil
+count = nil
+
+ARGV.each do |argument|
+  case argument
+  when /--count=(\d+)/
+    count = $1.to_i
+  when /--format=csv/i
+    format = :csv
+  end
+end
+
+show_usage if count.nil?
+
+# This seems ugly... but using ARGF is so useful
+ARGV.shift unless count.nil?
+ARGV.shift unless format.nil?
+
+lines = ARGF.readlines
+
+if :csv == format
+  header = lines.shift
+  puts header
+end
+
+count.times do
+  puts lines[rand(lines.length)]
+end
+
