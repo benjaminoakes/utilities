@@ -12,6 +12,8 @@ require 'yaml'
 EXCEL_2003_ROW_LIMIT = 65_536
 EXCEL_2003_COLUMN_LIMIT = 256
 
+SAS_COLUMN_NAME_LENGTH_LIMIT = 32
+
 def show_usage
   # or something like this in the rule file?
   # __options:
@@ -189,6 +191,14 @@ if __FILE__ == $PROGRAM_NAME
     if options['output-style'].include?('Excel-2003') && matching_columns.length > EXCEL_2003_COLUMN_LIMIT
       puts if $DRY_RUN
       warn "Over Excel 2003 column limit for #{base_output_filename.inspect}.  Run with --dry-run to see selected columns."
+    end
+
+    if options['output-style'].include?('SAS')
+      over_length_names = matching_columns.select { |c| c.length > SAS_COLUMN_NAME_LENGTH_LIMIT }
+
+      over_length_names.each do |name|
+        warn "Over SAS column name length limit for:  #{name.inspect}"
+      end
     end
 
     if $DRY_RUN
