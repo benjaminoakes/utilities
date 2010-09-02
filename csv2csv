@@ -13,7 +13,7 @@ EXCEL_2003_ROW_LIMIT = 65_536
 EXCEL_2003_COLUMN_LIMIT = 256
 
 def show_usage
-  # or something like this?
+  # or something like this in the rule file?
   # __options:
   #   unique: true
   #   output_style: SAS
@@ -144,6 +144,9 @@ if __FILE__ == $PROGRAM_NAME
 
   all_column_selections = rules.map { |key, values| values }.flatten.uniq
   remainder = header - matching_columns_for(header, all_column_selections)
+  STDERR.puts "Remainder:"
+  STDERR.puts ""
+  STDERR.puts remainder
   missing = all_column_selections.select { |selector| !header.any? { |column_name| column_name.match(selector) } }
 
   if !missing.empty?
@@ -217,7 +220,8 @@ if __FILE__ == $PROGRAM_NAME
                 elsif 'f' == cell
                   0
                 else
-                  cell
+                  # SAS can't handle semicolons or CSV-escaped commas.
+                  cell.gsub(/[,;]/, '_')
                 end
               end
             end
