@@ -3,11 +3,18 @@
 
 def show_usage
   STDERR.puts <<-EOF
-Usage: #{$PROGRAM_NAME} [--help] [--verbose] --source-file=source_file --lines=i..j --test-command=test_command
+Usage: #{$PROGRAM_NAME} [--help] [--verbose] [--mode=up] --source-file=source_file --lines=i..j --test-command=test_command
 
 Find the line on which a bug occurs by giving a section of the program to progressively comment out and then test.
 
 This updates the source_file in place, but makes a backup at "source_file.bak" first.
+
+    --help                          Show this help text.
+    --verbose                       Verbosely describe what's going on.
+    --mode=up                       Cause the comments to appear bottom first (going up) rather than top first (default).
+    --source-file=source_file       File that has the lines to comment.
+    --lines=i..j                    Range of lines to comment (e.g. 5..15, inclusive).
+    --test-command=test_command     Shell command to run after each comment step.
   EOF
 
   exit -1
@@ -24,6 +31,7 @@ if __FILE__ == $PROGRAM_NAME
   line_range = nil
   test_command = nil
   comment_string = nil
+  mode = :down
   $VERBOSE = false
 
   ARGV.each do |argument|
@@ -32,6 +40,8 @@ if __FILE__ == $PROGRAM_NAME
       show_usage
     when '--verbose'
       $VERBOSE = true
+    when '--mode=up'
+      mode = :up
     when /^--source-file=(.*?)$/
       source_filename = $1
       comment_string = COMMENT_STRING_FROM_EXTNAME[File.extname(source_filename)]
@@ -49,8 +59,21 @@ if __FILE__ == $PROGRAM_NAME
   source_lines = File.open(source_filename, 'r') { |source_file| source_file.readlines }
   File.open("#{source_filename}.bak", 'w') { |backup_file| backup_file.write source_lines }
 
-  line_range.each do |test_range_end|
-    test_range = Range.new(line_range.begin, test_range_end)
+  if :down == mode
+    line_order = line_range
+  elsif :up == mode
+    line_order = line_range.to_a.reverse
+  end
+
+  line_order.each do |iteration_point|
+    if :down == mode
+      test_range = Range.new(line_range.begin, iteration_point)
+    elsif :up == mode
+      test_range = Range.new(iteration_point, line_range.end)
+    else
+      raise "Unrecognized mode: #{mode.inspect}"
+    end
+
     puts '-' * 80 if $VERBOSE
     puts "test_range: #{(test_range).inspect}" if $VERBOSE
   
@@ -62,7 +85,7 @@ if __FILE__ == $PROGRAM_NAME
           elsif comment_string.kind_of? Array
             commented_line = "#{comment_string[0]} #{line.chomp} #{comment_string[1]}" 
           else
-            fail
+            raise "Unrecognized comment string: #{comment_string.inspect}"
           end
 
           source_file.puts commented_line
