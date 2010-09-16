@@ -1,0 +1,5 @@
+#!/bin/bash
+# Allows you to say "open that with 'le vim'" or "use 'le screen'".  Idea from @lambdabutz (Brian Butz) on Twitter.
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+$*
