@@ -1,0 +1,81 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+require 'date'
+require 'fileutils'
+
+class Renamer
+  DEFAULTS = {
+    :verbose => true,
+    :noop => false,
+  }
+
+  FORMATS = {
+    'adp' => /Pay\sDate:.*?(\d\d\/\d\d\/\d\d\d\d)$/i,
+    'kronos' => /Check\sDate:\s(.*?)$/i,
+  }
+end
+
+def process_arguments(arguments)
+  if arguments.empty? || arguments.include?('--help')
+    show_usage
+  end
+  
+  options = Renamer::DEFAULTS.dup
+
+  if ARGV.delete('--noop') || ARGV.delete('--dry-run')
+    options[:noop] = true
+  end
+  
+  case arguments.first
+  when /^--format=(.*?)$/
+    options[:format] = $1
+  else
+    show_usage
+  end
+
+  options
+end
+
+def show_usage
+  STDERR.puts <<-EOF
+Usage: #{$PROGRAM_NAME} [--help] --format=name
+
+Rename PDF files by a date that each file contains as text, but isn't part of the filename.  Useful for bills, pay slips, etc.
+
+  --help                Show this help text.
+  --dry-run, --noop     Don't make any changes; just show what would happen.
+
+Formats:
+
+  EOF
+
+  Renamer::FORMATS.keys.each do |name|
+    puts "  --format=#{name}"
+  end
+
+  exit -1
+end
+
+if __FILE__ == $PROGRAM_NAME
+  options = process_arguments(ARGV)
+  pattern = Renamer::FORMATS[options.delete(:format)]
+  
+  if pattern.nil?
+    show_usage
+  end
+
+  Dir.glob('*.pdf').each do |pdf_filename|
+    begin
+      pdf_text = %x(pdftotext "#{pdf_filename}" -)
+      match_data = pdf_text.match(pattern)
+
+      pdf_date = Date.parse(match_data[1])
+      new_filename = "#{pdf_date.strftime('%Y.%m.%d')}.pdf"
+
+      FileUtils.mv pdf_filename, new_filename, options
+    rescue => e
+      STDERR.puts "Error for #{pdf_filename.inspect}: #{e.class.to_s} #{e.message}"
+    end
+  end
+end
+
