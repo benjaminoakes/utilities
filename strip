@@ -29,7 +29,7 @@ when '--erb'
 when '--sh-comment' # For Ruby, Perl, Bash, etc.
   /#.*$/
 when '--non-ascii'
-  /[^\x20-\x7E]/ # not [:print:]
+  /[^\x20-\x7E\n]/ # not [:print:]
 else
   Regexp.new(ARGV[0])
 end

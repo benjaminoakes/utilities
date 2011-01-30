@@ -1,0 +1,256 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'csv'
+require 'fileutils'
+require 'yaml'
+
+# From http://office.microsoft.com/en-us/excel-help/excel-specifications-and-limits-HP005199291.aspx:
+# 
+#     Worksheet size: 65,536 rows by 256 columns
+# 
+EXCEL_2003_ROW_LIMIT = 65_536
+EXCEL_2003_COLUMN_LIMIT = 256
+
+SAS_COLUMN_NAME_LENGTH_LIMIT = 32
+
+def show_usage
+  # or something like this in the rule file?
+  # __options:
+  #   unique: true
+  #   output_style: SAS
+
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--debug] [--help] [--output-style=XYZ] [--unique] csv_file rule_file
+
+Transform a CSV file based on rules.
+
+This is primarily for dividing up files.  If you're going to do much by the way of manipulation, you might also check out csv2sqlite.
+
+  --dry-run               Just show what would happen; don't do anything yet.
+  --help                  Show this help text.
+  --output-style=name     Adjust the CSV output for certain programs.
+                          Supported values:  SAS, Excel-2003
+  --unique                Remove duplicate output rows.
+  csv_file                Input CSV file.
+  rule_file               Rule file defining output.
+
+Rule file format
+----------------
+
+The rule file is a YAML-based format.  Example:
+
+    DEFAULTS: &DEFAULTS
+      - first name
+      - last name
+    my_first_output_file:
+      - *DEFAULTS                    # Include the columns defined as DEFAULTS (first and last name)
+      - first_column                 # Only this specific column
+      - AB_*                         # All columns beginning with AB_
+      - /^a regular expression$/     # All columns matching this PCRE
+    my_second_output_file:
+      - *DEFAULTS
+      - AB_*
+      - CD_*                         # All columns beginning with CD_
+
+This will create two output files in a directory named after csv_file, each output file having the specified filename and columns.  Timestamps are added for convenience.
+EOF
+  exit -1
+end
+
+def warn(message)
+  STDERR.puts "WARNING: #{message}"
+end
+
+def process_rules(rules)
+  processed_rules = rules
+
+  # Drop all capital keys (assumed to be groups)
+  processed_rules.delete_if { |key, value| key.match(/^[^a-z]+$/) }
+
+  processed_rules.keys.each do |key|
+    # Not sure why, but YAML was treating the groups (e.g., DEFAULTS) as nested lists
+    processed_rules[key] = processed_rules[key].flatten
+
+    processed_rules[key].map! do |selection|
+      if selection.match(/^\/(.*?)\/$/) # Regexp input syntax, e.g. /foobar/
+        Regexp.new(selection[1, selection.length - 2]) # Drop the slashes -- they're just convention
+      elsif selection.match(/\*/)
+        # Turn globs into regexps
+        Regexp.new('^' + selection.gsub('*', '.*?') + '$')
+      else
+        selection
+      end
+    end
+  end
+
+  return processed_rules
+end
+
+def matching_columns_for(header, selectors)
+  return selectors.map { |selector| header.grep(selector) }.flatten
+end
+
+if __FILE__ == $PROGRAM_NAME
+  csv_filename = nil
+  rule_filename = nil
+  options = {
+    'output-style' => []
+  }
+
+  ARGV.each do |argument|
+    case argument
+    when '--dry-run'
+      $DRY_RUN = true
+    when '--help'
+      show_usage
+    when '--output-style=SAS'
+      options['output-style'] << 'SAS'
+    when '--output-style=Excel-2003'
+      options['output-style'] << 'Excel-2003'
+    when '--unique'
+      options['unique'] = true
+    when /^--/
+      show_usage
+    else
+      if csv_filename.nil?
+        csv_filename = argument
+      elsif rule_filename.nil?
+        rule_filename = argument
+      else
+        show_usage
+      end
+    end
+  end
+  
+  if csv_filename.nil? || rule_filename.nil?
+    show_usage
+  end
+
+  output_directory = File.basename(csv_filename, '.csv')
+  
+  rules = YAML::load(File.open(rule_filename))
+  rules = process_rules(rules)
+
+  csv_lines = File.open(csv_filename).readlines
+
+  header = CSV.parse(csv_lines.first).flatten
+
+  if $DRY_RUN
+    puts "Header:"
+    puts "======="
+    puts
+    puts header
+    puts
+  end
+
+  all_column_selections = rules.map { |key, values| values }.flatten.uniq
+  remainder = header - matching_columns_for(header, all_column_selections)
+  STDERR.puts "Remainder:"
+  STDERR.puts ""
+  STDERR.puts remainder
+  missing = all_column_selections.select { |selector| !header.any? { |column_name| column_name.match(selector) } }
+
+  if !missing.empty?
+    STDERR.puts "ERROR: No column name matches for:"
+    STDERR.puts ""
+    STDERR.puts missing.map { |r| r.inspect }
+    exit -1
+  end
+
+  unless $DRY_RUN
+    FileUtils.mkdir_p(output_directory)
+
+    data = CSV.parse(csv_lines.join)
+    data.shift # Get rid of the header
+  end
+
+  # We want the same timestamp for all of them
+  timestamp = Time.now.strftime('date_%Y-%m-%d_time_%H-%M-%S')
+
+  rules.each do |base_output_filename, selectors|
+    output_filename = File.join(output_directory, "#{base_output_filename}_#{timestamp}.csv")
+
+    if $DRY_RUN
+      puts
+    end
+
+    puts "Output filename: #{output_filename}"
+    puts '===================================' if $DRY_RUN
+    
+    if $DRY_RUN
+      puts
+      puts "Selectors:"
+      puts "----------"
+      puts
+      puts selectors.map { |r| r.inspect }
+    end
+
+    matching_columns = matching_columns_for(header, selectors)
+
+    if options['output-style'].include?('Excel-2003') && matching_columns.length > EXCEL_2003_COLUMN_LIMIT
+      puts if $DRY_RUN
+      warn "Over Excel 2003 column limit for #{base_output_filename.inspect}.  Run with --dry-run to see selected columns."
+    end
+
+    if options['output-style'].include?('SAS')
+      over_length_names = matching_columns.select { |c| c.length > SAS_COLUMN_NAME_LENGTH_LIMIT }
+
+      over_length_names.each do |name|
+        warn "Over SAS column name length limit for:  #{name.inspect}"
+      end
+    end
+
+    if $DRY_RUN
+      puts
+      puts "Matching Columns:"
+      puts "-----------------"
+      puts 
+      puts matching_columns
+    end
+
+    unless $DRY_RUN
+      # TODO split into multiple files if options['output-style'].include?('Excel-2003') and more than EXCEL_2003_ROW_LIMIT rows
+      File.open(output_filename, 'w') do |file|
+        CSV::Writer.generate(file) do |csv|
+          csv << matching_columns
+
+          compiled_data = data.map do |row|
+            matching_data = matching_columns.map { |column_name| row[header.index(column_name)] }
+
+            formatted_data = matching_data
+
+            if options['output-style'].include?('SAS')
+              formatted_data.map! do |cell|
+                # SAS wants dots instead of empty cells.  I don't know why.
+                if cell.nil? || cell.empty?
+                  '.'
+                elsif 't' == cell
+                  1
+                elsif 'f' == cell
+                  0
+                else
+                  # SAS can't handle semicolons or CSV-escaped commas.
+                  cell.gsub(/[,;]/, '_')
+                end
+              end
+            end
+
+            formatted_data
+          end
+
+          if options['unique']
+            compiled_data.uniq!
+          end
+
+          compiled_data.each do |row|
+            csv << row
+          end
+        end
+      end
+    end
+  end
+end
+
+# TODO remainder as an option?
+

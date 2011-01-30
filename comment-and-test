@@ -1,0 +1,113 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+def show_usage
+  STDERR.puts <<-EOF
+Usage: #{$PROGRAM_NAME} [--help] [--verbose] [--mode=up] --source-file=source_file --lines=i..j --test-command=test_command
+
+Find the line on which a bug occurs by giving a section of the program to progressively comment out and then test.
+
+This updates the source_file in place, but makes a backup at "source_file.bak" first.
+
+    --help                          Show this help text.
+    --verbose                       Verbosely describe what's going on.
+    --mode=up                       Cause the comments to appear bottom first (going up) rather than top first (default).
+    --source-file=source_file       File that has the lines to comment.
+    --lines=i..j                    Range of lines to comment (e.g. 5..15, inclusive).
+    --test-command=test_command     Shell command to run after each comment step.
+  EOF
+
+  exit -1
+end
+
+COMMENT_STRING_FROM_EXTNAME = {
+  '.rb' => '#',
+  '.sql' => '--',
+  '.erb' => ['<%#', '%>'],
+}
+
+if __FILE__ == $PROGRAM_NAME
+  source_filename = nil
+  line_range = nil
+  test_command = nil
+  comment_string = nil
+  mode = :down
+  $VERBOSE = false
+
+  ARGV.each do |argument|
+    case argument
+    when '--help'
+      show_usage
+    when '--verbose'
+      $VERBOSE = true
+    when '--mode=up'
+      mode = :up
+    when /^--source-file=(.*?)$/
+      source_filename = $1
+      comment_string = COMMENT_STRING_FROM_EXTNAME[File.extname(source_filename)]
+    when /^--lines=(\d+)\.\.(\d+)$/
+      line_range = Range.new($1.to_i, $2.to_i)
+    when /^--test-command=(.*?)$/
+      test_command = $1
+    else
+      show_usage
+    end
+  end
+
+  show_usage if [source_filename, comment_string, line_range, test_command].any? { |a| a.nil? }
+
+  source_lines = File.open(source_filename, 'r') { |source_file| source_file.readlines }
+  File.open("#{source_filename}.bak", 'w') { |backup_file| backup_file.write source_lines }
+
+  if :down == mode
+    line_order = line_range
+  elsif :up == mode
+    line_order = line_range.to_a.reverse
+  end
+
+  line_order.each do |iteration_point|
+    if :down == mode
+      test_range = Range.new(line_range.begin, iteration_point)
+    elsif :up == mode
+      test_range = Range.new(iteration_point, line_range.end)
+    else
+      raise "Unrecognized mode: #{mode.inspect}"
+    end
+
+    puts '-' * 80 if $VERBOSE
+    puts "test_range: #{(test_range).inspect}" if $VERBOSE
+  
+    File.open(source_filename, 'w') do |source_file|
+      source_lines.each_with_index do |line, index|
+        if test_range.include?(index + 1) # Use 1-based line indexing instead of 0-based
+          if comment_string.kind_of? String
+            commented_line = "#{comment_string} #{line}" 
+          elsif comment_string.kind_of? Array
+            commented_line = "#{comment_string[0]} #{line.chomp} #{comment_string[1]}" 
+          else
+            raise "Unrecognized comment string: #{comment_string.inspect}"
+          end
+
+          source_file.puts commented_line
+          puts commented_line if $VERBOSE
+        else
+          source_file.puts line
+        end
+      end
+    end
+
+    `#{test_command}`
+    puts "$?.exitstatus: #{($?.exitstatus).inspect}" if $VERBOSE
+
+    if 0 == $?.exitstatus
+      puts "Passed test with range: #{(test_range).inspect}"
+    end
+  end
+
+  File.open("#{source_filename}.bak", 'r') do |backup_file|
+    File.open(source_filename, 'w') do |source_file|
+      source_file.write backup_file.read
+    end
+  end
+end
+

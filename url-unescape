@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+require 'cgi'
+
+def show_usage
+  STDERR.puts <<EOF
+Usage: #{$PROGRAM_NAME} [--help] [filename]
+
+Unescape URL strings
+
+  --help      Show this help text.
+  filename    Input file.
+
+Example:
+
+    $ echo '%27Stop%21%27+said+Fred' | #{$PROGRAM_NAME}
+    'Stop!' said Fred
+EOF
+  exit(-1)
+end
+
+if ARGV.any? { |a| '--help' == a }
+  show_usage
+end
+
+puts CGI::unescape(ARGF.readlines.join)
