@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Usage: mirror url
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+wget --mirror --convert-links --backup-converted --html-extension --page-requisites --wait=4 --random-wait "$1"
+
+# # For wp:
+# -R "*Special*" -e robots=off 
