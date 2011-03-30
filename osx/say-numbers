@@ -4,9 +4,11 @@
 
 def show_usage
   STDERR.puts <<EOF
-Usage: #{$PROGRAM_NAME} [--help] string
+Usage: #{$PROGRAM_NAME} [--help] [string]
 
 Say numbers out loud (e.g., a telephone number) so that you can check what you wrote.
+
+If no argument is supplied, the text on your clipboard is used.
 
   --help      Show this help text.
   string      Numbers to be said
@@ -14,13 +16,23 @@ EOF
   exit(-1)
 end
 
-if ARGV.empty? || ARGV.any? { |a| '--help' == a }
-  show_usage
-end
-
-ARGV.each do |arg|
+def say_numbers(string)
   # Put spaces in so that `say` doesn't read it as "five thousand, three hundred..."
-  separated = arg.gsub(/(.)/, '\1 ')
+  separated = string.gsub(/(.)/, '\1 ')
   %x(say #{separated})
 end
 
+if __FILE__ == $PROGRAM_NAME
+  if ARGV.include? '--help'
+    show_usage
+  end
+  
+  if ARGV.empty?
+    clipboard = %x(pbpaste)
+    say_numbers(clipboard)
+  else
+    ARGV.each do |arg|
+      say_numbers(arg)
+    end
+  end
+end 
