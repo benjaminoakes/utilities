@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+require 'open-uri'
+require 'yaml'
+
+class Cloner
+  def self.clone(github_url)
+    directory = github_url.gsub(/^https:\/\/github\.com\//, '')
+    github_url += '.git'
+
+    unless File.exists?(directory)
+      puts %x(git clone #{github_url} #{directory})
+    end
+  end
+end
+
+open('https://github.com/api/v2/yaml/repos/watched/benjaminoakes') do |f|
+  o = YAML.parse(f.read)
+  o['repositories'].value.each do |repository|
+    Cloner.clone(repository[:url].value)
+  end
+end
