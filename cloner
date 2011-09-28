@@ -10,6 +10,14 @@ class Cloner
     unless File.exists?(directory)
       puts %x(git clone #{github_url} #{directory})
     end
+
+    github_wiki_url = github_url.gsub('.git', '.wiki.git')
+    directory = github_wiki_url.gsub(/^https:\/\/github\.com\//, '')
+
+    unless File.exists?(directory)
+      puts %Q(git clone #{github_wiki_url} #{directory})
+      puts %x(git clone #{github_wiki_url} #{directory})
+    end
   end
 end
 
