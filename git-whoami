@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Show who you are to git.
+#
+# I miss this from bzr.
+#
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+echo "$(git config user.name) <$(git config user.email)>"
