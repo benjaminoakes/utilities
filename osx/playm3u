@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+def show_usage
+  STDERR.puts <<-EOF
+Usage: #{$PROGRAM_NAME} m3u_playlist [--help]
+
+Play a M3U playlist.
+  EOF
+  exit -1
+end
+
+if __FILE__ == $PROGRAM_NAME
+  if ARGV.empty? || ARGV.include?('--help')
+    show_usage
+  end
+  
+  ARGF.each_line do |line|
+    unless line.match(/^#/)
+      puts line
+      `afplay #{line.chomp.inspect}`
+    end
+  end
+ end 

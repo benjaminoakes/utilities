@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+class TweetableQuote
+  LENGTH_LIMIT = 140
+
+  def self.show_usage
+    STDERR.puts <<-EOF
+Usage: #{$PROGRAM_NAME} [query] quotes_csv
+
+Pick a random quote.
+
+  --help          Show this help text.
+  query           Pick quotes that have this regexp.
+  quotes_csv      File containing quotes in "topic,quote" format
+    EOF
+
+    exit -1
+  end
+
+  def self.pick_quote(query, filename)
+    quotes = []
+    
+    File.open(filename).readlines.each do |line|
+      components = line.split(',')
+    
+      # Alright, it's technically not CSV:
+      topic = components.shift
+      quote = components.join(',')
+    
+      quotes << quote
+    end
+    
+    tweetable = quotes.select { |q| q.length <= LENGTH_LIMIT }
+
+    unless query.nil?
+      tweetable = tweetable.select { |q| q.match(/#{query}/i) }
+    end
+
+    puts "tweetable.length: #{(tweetable.length).inspect}"
+    puts tweetable
+
+    tweetable[Kernel.rand(tweetable.length)]
+  end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  if ARGV.empty? || ARGV.include?('--help')
+    TweetableQuote.show_usage
+  end
+  
+  query = nil
+  
+  if 2 == ARGV.length
+    query = ARGV.shift
+  end
+  
+  filename = ARGV.shift
+  
+  puts TweetableQuote.pick_quote(query, filename)
+end
