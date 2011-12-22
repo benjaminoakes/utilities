@@ -1,0 +1,19 @@
+#!/usr/bin/env coffee
+argv = process.argv
+programName = argv[1]
+
+if (argv.some((arg) -> '--help' == arg))
+  console.log """
+    Display the time in ISO-8601 format
+
+      --help      Show this help text.
+    
+    Example:
+    
+      $ #{programName}
+      2011-12-22T14:27:31.260Z
+  """
+else
+  date = new Date
+  iso8601 = date.toISOString()
+  console.log(iso8601)
