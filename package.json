@@ -1,0 +1,8 @@
+{
+  "name": "cli-utilities",
+  "version": "0.0.1",
+  "dependencies": {
+    "coffee-script": "1.1.2",
+    "underscore": "1.2.3"
+  }
+}

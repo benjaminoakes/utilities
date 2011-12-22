@@ -1,9 +1,13 @@
 #!/usr/bin/env coffee
+_ = require('underscore')
+
 argv = process.argv
 programName = argv[1]
 
-if (argv.some((arg) -> '--help' == arg))
+if (_(argv).contains('--help'))
   console.log """
+    Usage: #{programName} [--help]
+
     Display the time in ISO-8601 format
 
       --help      Show this help text.
