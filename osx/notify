@@ -14,8 +14,10 @@ $*
 
 if [ $? -eq 0 ]
 then
-	growlnotify -m "\"$*\" completed (SUCCESS)"
+  message="\"$*\" completed (SUCCESS)"
 else
-	growlnotify -m "\"$*\" completed (FAILED)"
+  message="\"$*\" completed (FAILED)"
 fi
 
+growlnotify -m "$message"
+# say "$message"

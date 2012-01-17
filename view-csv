@@ -18,4 +18,4 @@ if [ "$1" == "--help" -o "$1" == "" ]; then
   show_usage
 fi
 
-cat $1 | column -s, -t | less -#2 -N -S
+cat "$1" | column -s, -t | less -#2 -N -S
