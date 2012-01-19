@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require 'base64'
+
+puts Base64.decode64(ARGF.read)

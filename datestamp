@@ -12,7 +12,7 @@ Print out the current date.  Nice for making backups.
 
 Example:
 
-    cp filename.txt filename.\$(datestamp).txt
+    cp filename.txt filename.\$($0).txt
 EOF
   exit -1
 fi
