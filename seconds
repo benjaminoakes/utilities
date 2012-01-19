@@ -1,0 +1,40 @@
+#!/usr/bin/env coffee
+_ = require('underscore')
+
+secondsFromDuration = (duration) ->
+  sum = (accumulator, element, index) ->
+    accumulator + element * Math.pow(60, index)
+
+  String(duration).
+    split(':').
+    reverse().
+    map((e) -> parseInt(e, 10)).
+    reduce(sum, 0)
+
+usage = (programName) ->
+  """
+  Usage: #{programName} [--help] duration
+  
+  Convert a duration into seconds
+  
+    duration      A colon-separated duration
+    --help        Show this help text
+  
+  Example:
+  
+    $ #{programName} 25:16
+    1516
+  """
+
+
+do ->
+  argv = process.argv
+  programName = argv[1]
+  
+  if (argv.length == 2 || _(argv).contains('--help'))
+    console.log(usage(programName))
+  else
+    times = argv[2..argv.length]
+    
+    times.forEach (arg) ->
+      console.log(secondsFromDuration(arg))
