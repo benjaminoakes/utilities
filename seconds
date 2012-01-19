@@ -26,7 +26,6 @@ usage = (programName) ->
     1516
   """
 
-
 do ->
   argv = process.argv
   programName = argv[1]
