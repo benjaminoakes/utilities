@@ -1,2 +1,11 @@
 #!/usr/bin/env bash
-git log --oneline | reverse
+
+if [ "$1" == "" ]; then
+  count="5"
+else
+  count="$1"
+fi
+
+echo Key Commits:
+echo
+git log --oneline | reverse | tail -n $count
