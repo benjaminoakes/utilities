@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Remove lines that shouldn't get commited in Selenium
+find "$1" -name *.html -exec sed -i .bak '/selenium.base/d' {} \;
