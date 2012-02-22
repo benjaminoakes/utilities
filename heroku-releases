@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+def show_usage
+  puts <<EOF
+Usage: #$PROGRAM_NAME app-name count [--help]
+
+Back up Heroku release info to files.
+
+  app-name      Name of application (app-name.heroku.com)
+  count         Number of releases for which to get info
+  --help        Show this help text
+
+Example:
+
+  # If I have 250 releases:
+  $ #$PROGRAM_NAME my-app 250
+  $ ls -1
+  v1.txt
+  v2.txt
+  ...
+  v250.txt
+EOF
+  exit -1
+end
+
+if ARGV.length != 2 || ARGV.include?('--help')
+  show_usage
+end
+
+app = ARGV[0]
+n = ARGV[1].to_i
+
+puts "app: #{(app).inspect}"
+puts "n: #{(n).inspect}"
+
+1.upto(n) do |i|
+  puts "i: #{(i).inspect}"
+  info = %x(heroku releases:info v#{i} --app #{app})
+  File.open("v#{i}.txt", 'w') { |f| f.puts(info) }
+end
