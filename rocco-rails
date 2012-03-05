@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+rocco $(find app -name *.js) $(ls */**/*.rb) script/*
