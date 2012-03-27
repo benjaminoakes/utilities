@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Remove extra whitespace (before end of line)
+# Example: `scrub-whitespace . "*.rb"
+
+# Note: the brackets have a space *AND* a tab (`\t` isn't valid in `sed`)
+find "$1" -name $2 -print -exec sed -i .bak 's/[  ]*$//g' {} \;
