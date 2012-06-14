@@ -1,33 +1,32 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env bash
 
-# Author: Benjamin Oakes <hello@benjaminoakes.com>
+function show_usage {
+	cat <<EOF
+Usage: $0 cutoff
 
-def show_usage
-  STDERR.puts <<EOF
-Usage: #{$PROGRAM_NAME} [ --help ]
+Check whether free disk space (df) is above a cutoff percentage.
 
-Checks a volume's free space.  Meant for a cron job.
+Example:
 
-  --help      Show this help text.
+	$0 80
 EOF
-  exit(-1)
-end
+	exit -1
+}
 
-if ARGV.any? { |a| '--help' == a }
-  show_usage
-end
+if [ $# -ne 1 ]; then
+	show_usage
+fi
 
-VOLUME_NAME = 'Time Machine'
-VOLUME_PATH = "/Volumes/#{VOLUME_NAME}"
+facility="local"
+prefix="[$(basename "$0")]"
+cutoff="$1"
+percent="$(df / | grep -o '[0-9]\+%' | sed 's/%//')"
+postfix="$cutoff% cutoff"
 
-free_space_table = %x(df)
-free_space_table.each do |line|
-  match_data = line.match(/(\d+)%\s+#{VOLUME_PATH}$/)
-  unless match_data.nil?
-    percentage = match_data[1].to_i
-    if percentage >= 98
-      STDERR.puts "#{VOLUME_PATH} is getting full (#{percentage}%)"
-    end
-  end
-end
-
+if [ $percent -gt $cutoff ]; then
+	msg="$prefix Above $postfix"
+	logger -p "local0.warn" "$msg"
+	echo $msg
+else
+	logger -p "local0.info" "$prefix Below $postfix"
+fi
