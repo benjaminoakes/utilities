@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+function show_usage {
+	cat <<EOF
+Usage: $0 cutoff
+
+Check whether free disk space (df) is above a cutoff percentage.
+
+Example:
+
+	$0 80
+EOF
+	exit -1
+}
+
+if [ $# -ne 1 ]; then
+	show_usage
+fi
+
+facility="local"
+prefix="[$(basename "$0")]"
+cutoff="$1"
+percent="$(df / | grep -o '[0-9]\+%' | sed 's/%//')"
+postfix="$cutoff% cutoff"
+
+if [ $percent -gt $cutoff ]; then
+	msg="$prefix Above $postfix"
+	logger -p "local0.warn" "$msg"
+	echo $msg
+else
+	logger -p "local0.info" "$prefix Below $postfix"
+fi
