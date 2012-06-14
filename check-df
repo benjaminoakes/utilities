@@ -27,8 +27,8 @@ postfix="$cutoff% cutoff"
 
 if [ $percent -gt $cutoff ]; then
 	msg="$prefix Above $postfix"
-	logger -p "$facility.warn" "$msg"
+	logger -p "$facility.warning" "$msg"
 	echo $msg
 else
-	logger -p "$facility.info" "$prefix Below $postfix"
+	logger -p "$facility.notice" "$prefix Below $postfix"
 fi
