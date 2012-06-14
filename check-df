@@ -18,7 +18,8 @@ if [ $# -ne 1 ]; then
 	show_usage
 fi
 
-facility="local"
+# Facility was chosen arbitrarily; has to be between "local0" and "local7" on Ubuntu
+facility="local0"
 prefix="[$(basename "$0")]"
 cutoff="$1"
 percent="$(df / | grep -o '[0-9]\+%' | sed 's/%//')"
@@ -26,8 +27,8 @@ postfix="$cutoff% cutoff"
 
 if [ $percent -gt $cutoff ]; then
 	msg="$prefix Above $postfix"
-	logger -p "local0.warn" "$msg"
+	logger -p "$facility.warn" "$msg"
 	echo $msg
 else
-	logger -p "local0.info" "$prefix Below $postfix"
+	logger -p "$facility.info" "$prefix Below $postfix"
 fi
