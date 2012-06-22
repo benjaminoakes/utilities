@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Wrapper for `open` on OS X to make `xdg-open` act like it does in Gnome, KDE, Unity, etc.
+open $*
