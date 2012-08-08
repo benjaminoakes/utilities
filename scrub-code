@@ -1,19 +1,6 @@
-#!/usr/bin/env ruby
-# Tidy up code.
-#
-# Might be better written using `sed`.
-#
-# Example:
-#
-#     find . -name '*.rb' -exec scrub-code {} \;
-#
-# Author: Benjamin Oakes <hello@benjaminoakes.com>
+#!/usr/bin/env bash
+# Remove extra whitespace (before end of line)
+# Example: `scrub-whitespace . "*.rb"`
 
-filename = ARGV[0]
-lines = File.open(filename).readlines
-
-File.open(filename, 'w') do |f|
-  lines.each do |line|
-    f.puts line.sub(/\s+$/, '')
-  end
-end
+# Note: the brackets have a space *AND* a tab (`\t` isn't valid in `sed`)
+find "$1" -name $2 -print -exec sed -i .bak 's/[  ]*$//g' {} \;
