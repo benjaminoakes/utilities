@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 # Remove lines that shouldn't get commited in Selenium
-# Example: scrub-selenium spec/acceptance/
+# Example: `scrub-selenium spec/acceptance/`
+
 find "$1" -name *.html -exec sed -i .bak '/selenium.base/d' {} \;
