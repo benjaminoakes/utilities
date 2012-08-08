@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# Tidy up code.
+#
+# Might be better written using `sed`.
+# 
+# Example:
+#
+#     find . -name *.rb -exec scrub-code {} \;
+# 
+# Author: Benjamin Oakes <hello@benjaminoakes.com>
+
+filename = ARGV[0]
+lines = File.open(filename).readlines
+
+File.open(filename, 'w') do |f|
+  lines.each do |line|
+    f.puts line.sub(/\s+$/, '')
+  end
+end
