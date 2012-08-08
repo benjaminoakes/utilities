@@ -5,7 +5,7 @@
 # 
 # Example:
 #
-#     find . -name *.rb -exec scrub-code {} \;
+#     find . -name '*.rb' -exec scrub-code {} \;
 # 
 # Author: Benjamin Oakes <hello@benjaminoakes.com>
 
