@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# From https://github.com/benjaminoakes/utilities
+set -o errexit
+
+function show-usage {
+  cat <<EOF
+Usage: $0 [--help] [url | [[-f | --file] path]]
+
+Map shortened URLs to their expanded versions.
+
+  --help        Show this help text.
+  url           A single URL to resolve.
+  path          File containing URLs to resolve, one per line.
+
+Example:
+
+  $ $0 http://t.co/asdf
+  http://t.co/foo => http://example.com/
+
+  $ cat file.txt
+  http://t.co/foo
+  http://t.co/bar
+  $ $0 --file file.txt
+  http://t.co/foo => http://example.com/baz
+  http://t.co/bar => http://example.com/qux
+EOF
+  exit -1
+}
+
+function resolve {
+  url="$1"
+
+  echo -n "$url => "
+  curl --verbose "$url" 2>&1 |
+    grep 'Location: ' |
+    sed 's/< Location: //'
+}
+
+# TODO: also accept URL as parameter so it doesn't have to be in a file
+if [ "$1" == '--help' -o "$1" == '' ]; then
+  show-usage
+fi
+
+if [ "$1" == '-f' -o "$1" == '--file' ]; then
+  for url in $(cat $2); do
+    resolve "$url"
+  done
+else
+  resolve "$1"
+fi
