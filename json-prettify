@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+
+// Make JSON pretty.
+//
+// Usage: json-prettify < json_text
+
+function prettify(jsonText) {
+  var json, pretty, indented;
+
+  json = JSON.parse(jsonText);
+  pretty = JSON.stringify(json, null, 2);
+
+  // For markdown-style formatting:
+  indented = pretty.
+    split("\n").
+    map(function (line) { return "    " + line; }).
+    join("\n");
+
+  return indented;
+}
+
+function main() {
+  var buffer = [];
+
+  process.stdin.on('data', function (data) {
+    var string = data.toString();
+
+    buffer.push(string);
+  });
+
+  process.stdin.on('end', function () {
+    var body, prettified;
+
+    body = buffer.join('');
+    prettified = prettify(body);
+
+    console.log(prettified);
+  });
+}
+
+main();
